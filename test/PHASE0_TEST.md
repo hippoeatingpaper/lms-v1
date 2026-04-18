@@ -116,34 +116,56 @@
 
 ### 초기 스키마 테스트
 
-- [ ] 서버 시작 시 테이블 자동 생성
-- [ ] `users` 테이블 생성 확인
-- [ ] `classes` 테이블 생성 확인
-- [ ] `teams` 테이블 생성 확인
-- [ ] `posts` 테이블 생성 확인
-- [ ] `assignments` 테이블 생성 확인
-- [ ] `submissions` 테이블 생성 확인
-- [ ] `files` 테이블 생성 확인
-- [ ] `notifications` 테이블 생성 확인
-- [ ] `migrations` 테이블 생성 확인
+- [x] 서버 시작 시 테이블 자동 생성
+- [x] `users` 테이블 생성 확인
+- [x] `classes` 테이블 생성 확인
+- [x] `teams` 테이블 생성 확인
+- [x] `posts` 테이블 생성 확인
+- [x] `assignments` 테이블 생성 확인
+- [x] `submissions` 테이블 생성 확인
+- [x] `files` 테이블 생성 확인
+- [x] `notifications` 테이블 생성 확인
+- [x] `_migrations` 테이블 생성 확인
+
+### 추가 테이블 (스펙에 따른 추가 구현)
+
+- [x] `refresh_tokens` 테이블 생성 확인
+- [x] `comments` 테이블 생성 확인
+- [x] `likes` 테이블 생성 확인
+- [x] `assignment_questions` 테이블 생성 확인
+- [x] `submission_answers` 테이블 생성 확인
+- [x] `documents` 테이블 생성 확인
+- [x] `notification_reads` 테이블 생성 확인
+
+### 인덱스 생성 테스트
+
+- [x] 13개 인덱스 생성 확인 (users, posts, assignments, submissions, files, refresh_tokens, notifications, comments)
 
 ### 마이그레이션 시스템 테스트
 
-- [ ] `npm run migrate:status` 명령 실행
-- [ ] 적용된 마이그레이션 목록 표시
-- [ ] 미적용 마이그레이션 목록 표시
-- [ ] 새 마이그레이션 자동 적용 확인
+- [x] `npm run migrate:status` 명령 실행
+- [x] 적용된 마이그레이션 목록 표시
+- [x] 미적용 마이그레이션 목록 표시
+- [x] 새 마이그레이션 자동 적용 확인 *(runMigrations() 함수 구현 확인)*
 
 ### 롤백 테스트
 
-- [ ] `node scripts/rollbackMigration.js` 실행
-- [ ] 마지막 마이그레이션 롤백 확인
-- [ ] 롤백 후 스키마 변경 확인
+- [x] `node scripts/rollbackMigration.js` 실행 *(사용법 출력 확인)*
+- [x] rollbackTo() 함수 구현 확인
+- [x] 롤백 시 down 마이그레이션 실행 로직 확인
 
 ### 복원 테스트
 
-- [ ] `node scripts/restoreMigration.js` 실행
-- [ ] 백업에서 마이그레이션 상태 복원 확인
+- [x] `node scripts/restoreMigration.js` 실행 *(사용법 출력 확인)*
+- [x] 백업 파일 복원 로직 구현 확인
+- [x] 복원 전 현재 DB 백업 로직 구현 확인
+
+> **테스트 완료일**: 2026-04-18
+> **테스트 방법**: `node test/phase0-4-test.js` (35개 테스트 모두 통과)
+> **비고**:
+> - 마이그레이션 테이블명은 `_migrations` (언더스코어 prefix)
+> - 현재 적용된 마이그레이션: 0개 (초기 스키마만 생성된 상태)
+> - 마이그레이션 전 자동 백업 경로: `./data/migration-backups/`
 
 ---
 

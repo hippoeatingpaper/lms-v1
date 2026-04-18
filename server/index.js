@@ -19,6 +19,10 @@ import {
   saveDatabase
 } from './db.js'
 
+// 스키마 및 마이그레이션
+import { createInitialSchema } from './migrations/schema.js'
+import { runMigrations } from './migrations/index.js'
+
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
 const NODE_ENV = process.env.NODE_ENV || 'development'
@@ -26,7 +30,7 @@ const HTTPS_ENABLED = process.env.HTTPS_ENABLED === 'true'
 const SERVER_IP = process.env.SERVER_IP || 'localhost'
 const DB_PATH = process.env.DB_PATH || './data/database.db'
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads'
-const CERT_DIR = './certs'
+const CERT_DIR = '../certs'
 
 // ============================================================
 // 1. 필수 디렉터리 자동 생성
@@ -136,16 +140,22 @@ async function start() {
     // 2. DB 초기화 (비동기)
     await initDatabase()
 
-    // 3. 크래시 핸들러 설정
+    // 3. 초기 스키마 생성 (DB가 비어있을 때만)
+    createInitialSchema()
+
+    // 4. 마이그레이션 실행 (동기)
+    runMigrations()
+
+    // 5. 크래시 핸들러 설정
     setupCrashHandler()
 
-    // 4. 자동 백업 시작
+    // 6. 자동 백업 시작
     startAutoBackup()
 
-    // 5. HTTP/HTTPS 서버 생성
+    // 7. HTTP/HTTPS 서버 생성
     createServer()
 
-    // 6. 서버 리스닝
+    // 8. 서버 리스닝
     httpServer.listen(PORT, '0.0.0.0', () => {
       const protocol = HTTPS_ENABLED ? 'https' : 'http'
       console.log('')
