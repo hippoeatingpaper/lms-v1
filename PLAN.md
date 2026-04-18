@@ -53,11 +53,11 @@ server/SPEC_SETUP.md를 읽고 Phase 0-2: HTTPS 서버 설정을 구현해줘
 ---
 
 ### 0-3: sql.js 데이터베이스 래퍼
-- [ ] `server/db.js` 생성 (initDatabase, db 객체)
-- [ ] 디바운스 저장 (debouncedSave)
-- [ ] 즉시 저장 (saveImmediate, criticalTransaction)
-- [ ] 자동 백업 (startAutoBackup)
-- [ ] 크래시 핸들러 (setupCrashHandler)
+- [x] `server/db.js` 생성 (initDatabase, db 객체)
+- [x] 디바운스 저장 (debouncedSave)
+- [x] 즉시 저장 (saveImmediate, criticalTransaction)
+- [x] 자동 백업 (startAutoBackup)
+- [x] 크래시 핸들러 (setupCrashHandler)
 
 **참조**: `server/SPEC_DATABASE.md` → DB 래퍼 구현
 
@@ -596,7 +596,7 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 
 | Phase | 설명 | 진행률 |
 |-------|------|--------|
-| 0 | 인프라 | 2/6 |
+| 0 | 인프라 | 3/6 |
 | 1 | 인증 시스템 | 0/3 |
 | 2 | REST API | 0/8 |
 | 3 | React 프론트엔드 | 0/11 |
@@ -604,7 +604,7 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | 5 | 고급 기능 | 0/3 |
 | 6 | 테스트 및 마무리 | 0/3 |
 
-**전체**: 2/39 단계 완료
+**전체**: 3/39 단계 완료
 
 ---
 

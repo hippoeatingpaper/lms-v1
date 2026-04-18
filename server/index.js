@@ -10,6 +10,15 @@ import path from 'path'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
+// DB 모듈
+import {
+  initDatabase,
+  startAutoBackup,
+  setupCrashHandler,
+  db,
+  saveDatabase
+} from './db.js'
+
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
 const NODE_ENV = process.env.NODE_ENV || 'development'
@@ -35,9 +44,6 @@ function ensureDirectories() {
   console.log(`[INIT] 업로드 디렉터리: ${uploadDir}`)
   console.log(`[INIT] 인증서 디렉터리: ${certDir}`)
 }
-
-// 서버 시작 전 반드시 호출
-ensureDirectories()
 
 // ============================================================
 // 2. Express 앱 생성
@@ -92,60 +98,99 @@ app.use('/api', (req, res) => {
 // ============================================================
 let httpServer
 
-if (HTTPS_ENABLED) {
-  const certPath = path.resolve(CERT_DIR, 'cert.pem')
-  const keyPath = path.resolve(CERT_DIR, 'key.pem')
+function createServer() {
+  if (HTTPS_ENABLED) {
+    const certPath = path.resolve(CERT_DIR, 'cert.pem')
+    const keyPath = path.resolve(CERT_DIR, 'key.pem')
 
-  if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
-    console.error('[ERROR] 인증서 파일이 없습니다.')
-    console.error('        먼저 다음 명령을 실행하세요:')
-    console.error('        npm run generate-cert')
-    process.exit(1)
+    if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
+      console.error('[ERROR] 인증서 파일이 없습니다.')
+      console.error('        먼저 다음 명령을 실행하세요:')
+      console.error('        npm run generate-cert')
+      process.exit(1)
+    }
+
+    const options = {
+      cert: fs.readFileSync(certPath),
+      key: fs.readFileSync(keyPath),
+    }
+
+    httpServer = https.createServer(options, app)
+    console.log('[SERVER] HTTPS 모드로 서버 실행')
+  } else {
+    httpServer = http.createServer(app)
+    console.log('[SERVER] HTTP 모드로 서버 실행 (개발 환경 전용)')
   }
 
-  const options = {
-    cert: fs.readFileSync(certPath),
-    key: fs.readFileSync(keyPath),
-  }
-
-  httpServer = https.createServer(options, app)
-  console.log('[SERVER] HTTPS 모드로 서버 실행')
-} else {
-  httpServer = http.createServer(app)
-  console.log('[SERVER] HTTP 모드로 서버 실행 (개발 환경 전용)')
+  return httpServer
 }
 
 // ============================================================
-// 5. 서버 시작
+// 5. 서버 시작 (비동기 초기화 포함)
 // ============================================================
-httpServer.listen(PORT, '0.0.0.0', () => {
-  const protocol = HTTPS_ENABLED ? 'https' : 'http'
-  console.log('')
-  console.log('='.repeat(50))
-  console.log(`[SERVER] 서버 실행: ${protocol}://${SERVER_IP}:${PORT}`)
-  console.log(`[SERVER] 환경: ${NODE_ENV}`)
-  console.log(`[SERVER] Health Check: ${protocol}://${SERVER_IP}:${PORT}/api/v1/health`)
-  console.log('='.repeat(50))
-  console.log('')
-})
+async function start() {
+  try {
+    // 1. 필수 디렉터리 생성
+    ensureDirectories()
+
+    // 2. DB 초기화 (비동기)
+    await initDatabase()
+
+    // 3. 크래시 핸들러 설정
+    setupCrashHandler()
+
+    // 4. 자동 백업 시작
+    startAutoBackup()
+
+    // 5. HTTP/HTTPS 서버 생성
+    createServer()
+
+    // 6. 서버 리스닝
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      const protocol = HTTPS_ENABLED ? 'https' : 'http'
+      console.log('')
+      console.log('='.repeat(50))
+      console.log(`[SERVER] 서버 실행: ${protocol}://${SERVER_IP}:${PORT}`)
+      console.log(`[SERVER] 환경: ${NODE_ENV}`)
+      console.log(`[SERVER] Health Check: ${protocol}://${SERVER_IP}:${PORT}/api/v1/health`)
+      console.log('='.repeat(50))
+      console.log('')
+    })
+  } catch (err) {
+    console.error('[FATAL] 서버 시작 실패:', err)
+    process.exit(1)
+  }
+}
 
 // ============================================================
 // 6. 프로세스 종료 핸들러
 // ============================================================
-process.on('SIGINT', () => {
-  console.log('\n[SERVER] 서버 종료 중...')
-  httpServer.close(() => {
-    console.log('[SERVER] 서버 종료 완료')
-    process.exit(0)
-  })
-})
+function gracefulShutdown(signal) {
+  console.log(`\n[SERVER] ${signal} 수신, 서버 종료 중...`)
 
-process.on('SIGTERM', () => {
-  console.log('\n[SERVER] 서버 종료 중...')
-  httpServer.close(() => {
-    console.log('[SERVER] 서버 종료 완료')
+  // DB 저장
+  try {
+    saveDatabase()
+    console.log('[SERVER] DB 저장 완료')
+  } catch (err) {
+    console.error('[SERVER] DB 저장 실패:', err.message)
+  }
+
+  // 서버 종료
+  if (httpServer) {
+    httpServer.close(() => {
+      console.log('[SERVER] 서버 종료 완료')
+      process.exit(0)
+    })
+  } else {
     process.exit(0)
-  })
-})
+  }
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+
+// 서버 시작
+start()
 
 export { app, httpServer }
