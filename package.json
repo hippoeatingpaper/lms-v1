@@ -1,0 +1,27 @@
+{
+  "name": "classroom-system",
+  "version": "1.0.0",
+  "description": "교사 노트북 기반 실시간 수업 관리 플랫폼",
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "cross-env NODE_ENV=production node server/index.js",
+    "build": "cd client && npm run build",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js",
+    "create-teacher": "node scripts/createTeacher.js",
+    "generate-cert": "node scripts/generateCert.js",
+    "migrate:status": "node scripts/migrationStatus.js",
+    "migrate:rollback": "node scripts/rollbackMigration.js",
+    "migrate:restore": "node scripts/restoreMigration.js"
+  },
+  "keywords": ["classroom", "education", "realtime"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}

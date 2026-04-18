@@ -24,10 +24,10 @@
 > 모든 기능의 토대가 되는 서버 설정
 
 ### 0-1: 프로젝트 초기화
-- [ ] `package.json` 생성 (root, server, client)
-- [ ] 백엔드 npm 패키지 설치
-- [ ] `.env.example` 생성
-- [ ] `.gitignore` 설정
+- [x] `package.json` 생성 (root, server, client)
+- [x] 백엔드 npm 패키지 설치
+- [x] `.env.example` 생성
+- [x] `.gitignore` 설정
 
 **참조**: `server/SPEC_SETUP.md` → npm 패키지 목록, 환경변수
 
@@ -39,9 +39,9 @@ server/SPEC_SETUP.md를 읽고 Phase 0-1을 구현해줘
 ---
 
 ### 0-2: HTTPS 서버 설정
-- [ ] `scripts/generateCert.js` 생성
-- [ ] `server/index.js` 기본 구조 (HTTPS/HTTP 분기)
-- [ ] 필수 디렉터리 자동 생성 (`data/`, `uploads/`, `certs/`)
+- [x] `scripts/generateCert.js` 생성
+- [x] `server/index.js` 기본 구조 (HTTPS/HTTP 분기)
+- [x] 필수 디렉터리 자동 생성 (`data/`, `uploads/`, `certs/`)
 
 **참조**: `server/SPEC_SETUP.md` → HTTPS 설정, 인증서 생성 스크립트
 
@@ -596,7 +596,7 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 
 | Phase | 설명 | 진행률 |
 |-------|------|--------|
-| 0 | 인프라 | 0/6 |
+| 0 | 인프라 | 2/6 |
 | 1 | 인증 시스템 | 0/3 |
 | 2 | REST API | 0/8 |
 | 3 | React 프론트엔드 | 0/11 |
@@ -604,7 +604,7 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | 5 | 고급 기능 | 0/3 |
 | 6 | 테스트 및 마무리 | 0/3 |
 
-**전체**: 0/39 단계 완료
+**전체**: 2/39 단계 완료
 
 ---
 
