@@ -1,18 +1,25 @@
 // server/index.js
 // Express + HTTPS/HTTP 서버 진입점
 
-import 'dotenv/config'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
+
+// .env 파일 경로 설정 (루트 디렉토리)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+dotenv.config({ path: path.join(__dirname, '..', '.env') })
+
 import express from 'express'
 import https from 'https'
 import http from 'http'
 import fs from 'fs'
-import path from 'path'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
 // 미들웨어
 import { blockSensitivePaths } from './middleware/securityFilter.js'
 import { errorHandler } from './middleware/errorHandler.js'
+import { authenticate } from './middleware/auth.js'
 
 // DB 모듈
 import {
@@ -105,13 +112,22 @@ app.get('/api/v1/health', (req, res) => {
   })
 })
 
-// 테스트용 에러 라우트 (개발 환경에서만)
+// 테스트용 라우트 (개발 환경에서만)
 if (NODE_ENV === 'development') {
+  // 에러 핸들러 테스트
   app.get('/api/v1/test-error', (req, res, next) => {
     const error = new Error('테스트 에러입니다.')
     error.code = 'TEST_ERROR'
     error.statusCode = 500
     next(error)
+  })
+
+  // 인증 테스트 - 인증 필요 라우트
+  app.get('/api/v1/test-auth', authenticate, (req, res) => {
+    res.json({
+      message: '인증 성공',
+      user: req.user,
+    })
   })
 }
 

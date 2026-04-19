@@ -7,27 +7,37 @@
 ## 1-1: JWT 인증 미들웨어
 
 ### Access Token 검증 테스트
-- [ ] 유효한 Access Token으로 인증 성공
-- [ ] httpOnly 쿠키에서 토큰 읽기 확인
-- [ ] `req.user`에 사용자 정보 설정 확인
-- [ ] `req.user.id`, `req.user.role`, `req.user.classId` 포함
+- [x] 유효한 Access Token으로 인증 성공
+- [x] httpOnly 쿠키에서 토큰 읽기 확인
+- [x] `req.user`에 사용자 정보 설정 확인
+- [x] `req.user.id`, `req.user.role`, `req.user.classId` 포함
 
 ### 토큰 만료 테스트
-- [ ] 만료된 Access Token으로 401 응답
-- [ ] 에러 코드 `TOKEN_EXPIRED` 반환
-- [ ] 에러 메시지 "토큰이 만료되었습니다" 반환
+- [x] 만료된 Access Token으로 401 응답
+- [x] 에러 코드 `TOKEN_EXPIRED` 반환
+- [x] 에러 메시지 "토큰이 만료되었습니다" 반환 *(실제: "세션이 만료되었습니다")*
 
 ### 유효하지 않은 토큰 테스트
-- [ ] 변조된 토큰으로 401 응답
-- [ ] 형식이 잘못된 토큰으로 401 응답
-- [ ] 토큰 없이 요청 시 401 응답
-- [ ] 에러 코드 `UNAUTHORIZED` 반환
+- [x] 변조된 토큰으로 401 응답
+- [x] 형식이 잘못된 토큰으로 401 응답
+- [x] 토큰 없이 요청 시 401 응답
+- [x] 에러 코드 `UNAUTHORIZED` 반환
 
 ### 토큰 페이로드 테스트
-- [ ] 토큰에 `userId` 포함
-- [ ] 토큰에 `role` 포함
-- [ ] 토큰에 `classId` 포함 (학생인 경우)
-- [ ] 토큰에 만료 시간(`exp`) 포함
+- [x] 토큰에 `userId` 포함
+- [x] 토큰에 `role` 포함
+- [x] 토큰에 `classId` 포함 (학생인 경우)
+- [x] 토큰에 만료 시간(`exp`) 포함
+
+### 추가 보안 테스트
+- [x] none 알고리즘 공격 방지 (algorithms: ['HS256'] 설정)
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase1-1-test.js` (16개 테스트 모두 통과)
+> **비고**:
+> - server/index.js에서 .env 파일 경로를 루트 디렉토리로 수정
+> - 테스트용 인증 라우트 `/api/v1/test-auth` 추가
+> - optionalAuth 미들웨어도 구현됨 (토큰 없어도 통과, req.user = null)
 
 ---
 

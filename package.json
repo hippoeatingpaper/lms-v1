@@ -15,7 +15,11 @@
     "migrate:rollback": "node scripts/rollbackMigration.js",
     "migrate:restore": "node scripts/restoreMigration.js"
   },
-  "keywords": ["classroom", "education", "realtime"],
+  "keywords": [
+    "classroom",
+    "education",
+    "realtime"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {
@@ -25,10 +29,11 @@
     "cross-env": "^7.0.3"
   },
   "dependencies": {
-    "sql.js": "^1.12.0",
-    "bcryptjs": "^2.4.3",
-    "archiver": "^7.0.1",
     "adm-zip": "^0.5.16",
-    "dotenv": "^16.4.7"
+    "archiver": "^7.0.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.3",
+    "sql.js": "^1.12.0"
   }
 }

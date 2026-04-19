@@ -133,9 +133,9 @@ server/SPEC_SETUP.md를 읽고 Phase 0-6: CLI 스크립트를 구현해줘
 
 ### 1-1: JWT 인증 미들웨어
 
-- [ ] `server/middleware/auth.js` - authenticate 함수
-- [ ] Access Token 검증 (httpOnly 쿠키)
-- [ ] Token 만료 에러 처리
+- [x] `server/middleware/auth.js` - authenticate 함수
+- [x] Access Token 검증 (httpOnly 쿠키)
+- [x] Token 만료 에러 처리
 
 **참조**: `server/middleware/SPEC_AUTH.md`, `server/CLAUDE.md` → JWT Authentication Pattern
 
