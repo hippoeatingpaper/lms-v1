@@ -203,12 +203,12 @@ server/middleware/SPEC_AUTH.md를 읽고 Phase 2-1: Auth API를 구현해줘
 
 ### 2-2: Classes API
 
-- [ ] `server/routes/classes.js`
-- [ ] `GET /api/v1/classes` (반 목록)
-- [ ] `POST /api/v1/classes` (반 생성 - 교사)
-- [ ] `GET /api/v1/classes/:id` (반 상세)
-- [ ] `PUT /api/v1/classes/:id` (반 수정)
-- [ ] `DELETE /api/v1/classes/:id` (반 삭제)
+- [x] `server/routes/classes.js`
+- [x] `GET /api/v1/classes` (반 목록)
+- [x] `POST /api/v1/classes` (반 생성 - 교사)
+- [x] `GET /api/v1/classes/:id` (반 상세)
+- [x] `PATCH /api/v1/classes/:id` (반 수정)
+- [x] `DELETE /api/v1/classes/:id` (반 삭제)
 
 **참조**: `server/routes/SPEC_ADMIN.md`
 
@@ -222,12 +222,14 @@ server/routes/SPEC_ADMIN.md를 읽고 Phase 2-2: Classes API를 구현해줘
 
 ### 2-3: Users API (학생 관리)
 
-- [ ] `server/routes/users.js`
-- [ ] `GET /api/v1/classes/:classId/users` (반 학생 목록)
-- [ ] `POST /api/v1/classes/:classId/users` (학생 일괄 생성)
-- [ ] `PUT /api/v1/users/:id` (학생 정보 수정)
-- [ ] `DELETE /api/v1/users/:id` (학생 삭제)
-- [ ] `POST /api/v1/users/:id/reset-password` (비밀번호 초기화)
+- [x] `server/routes/users.js`
+- [x] `GET /api/v1/users` (학생 목록 - class_id 필터 지원)
+- [x] `GET /api/v1/users/:id` (학생 상세)
+- [x] `POST /api/v1/users` (학생 생성)
+- [x] `POST /api/v1/users/bulk` (학생 일괄 생성)
+- [x] `PATCH /api/v1/users/:id` (학생 정보 수정)
+- [x] `DELETE /api/v1/users/:id` (학생 삭제)
+- [x] `POST /api/v1/users/:id/reset-password` (비밀번호 초기화)
 
 **참조**: `server/routes/SPEC_ADMIN.md`
 
@@ -676,13 +678,13 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | ----- | ----------- | ---- |
 | 0     | 인프라         | 6/6 ✅ |
 | 1     | 인증 시스템      | 3/3 ✅ |
-| 2     | REST API    | 1/8  |
+| 2     | REST API    | 3/8  |
 | 3     | React 프론트엔드 | 0/11 |
 | 4     | 실시간 기능      | 0/5  |
 | 5     | 고급 기능       | 0/3  |
 | 6     | 테스트 및 마무리   | 0/3  |
 
-**전체**: 10/39 단계 완료
+**전체**: 12/39 단계 완료
 
 ---
 

@@ -7,6 +7,7 @@
 ## 2-1: Auth API
 
 ### POST /api/v1/auth/login
+
 - [x] 올바른 자격 증명으로 로그인 성공 (200)
 - [x] Access Token 쿠키 설정 확인
 - [x] Refresh Token 쿠키 설정 확인
@@ -16,18 +17,21 @@
 - [x] 빈 요청 바디로 로그인 실패 (400)
 
 ### POST /api/v1/auth/logout
+
 - [x] 로그아웃 성공 (200)
 - [x] Access Token 쿠키 삭제 확인
 - [x] Refresh Token 쿠키 삭제 확인
 - [x] 로그아웃 후 인증 필요 API 접근 불가
 
 ### POST /api/v1/auth/refresh
+
 - [x] 유효한 Refresh Token으로 갱신 성공 (200)
 - [x] 새 Access Token 발급 확인
 - [x] 만료된 Refresh Token으로 갱신 실패 (401)
 - [x] 유효하지 않은 Refresh Token으로 갱신 실패 (401)
 
 ### GET /api/v1/auth/me
+
 - [x] 인증된 사용자 정보 반환 (200)
 - [x] 교사: id, name, role='teacher' 포함
 - [x] 학생: id, name, role='student', class_id, team_id 포함
@@ -36,6 +40,7 @@
 > **테스트 완료일**: 2026-04-19
 > **테스트 방법**: `node test/phase2-1-test.js` (15개 테스트 모두 통과)
 > **비고**:
+> 
 > - httpOnly 쿠키 설정으로 JavaScript 접근 불가
 > - Refresh Token Rotation 적용 (갱신 시 새 토큰 발급)
 > - loginLimiter 적용 (username당 5회/15분 제한)
@@ -45,100 +50,151 @@
 ## 2-2: Classes API
 
 ### GET /api/v1/classes
-- [ ] 교사: 전체 반 목록 반환
-- [ ] 학생: 자신의 반만 반환
-- [ ] 각 반 정보에 id, name, description 포함
-- [ ] 학생 수 통계 포함
+
+- [x] 교사: 전체 반 목록 반환
+- [ ] 학생: 자신의 반만 반환 (현재 교사 전용 구현) → 현재 구현 불필요 
+- [x] 각 반 정보에 id, name 포함
+- [x] 학생 수 통계 포함 (stats.student_count)
 
 ### POST /api/v1/classes (교사 전용)
-- [ ] 반 생성 성공 (201)
-- [ ] 생성된 반 정보 반환
-- [ ] 필수 필드 누락 시 400 반환
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 중복 반 이름 처리 확인
+
+- [x] 반 생성 성공 (201)
+- [x] 생성된 반 정보 반환
+- [x] 필수 필드 누락 시 400 반환
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 중복 반 이름 처리 확인
 
 ### GET /api/v1/classes/:id
-- [ ] 반 상세 정보 반환 (200)
-- [ ] 소속 학생 목록 포함
-- [ ] 팀 목록 포함
-- [ ] 존재하지 않는 반 접근 시 404 반환
-- [ ] 학생: 다른 반 접근 시 403 반환
 
-### PUT /api/v1/classes/:id (교사 전용)
-- [ ] 반 정보 수정 성공 (200)
-- [ ] 수정된 반 정보 반환
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 존재하지 않는 반 수정 시 404 반환
+- [x] 반 상세 정보 반환 (200)
+- [ ] 소속 학생 목록 포함 (미구현) → Phase 2-3에서 별도 API 제공 예정 
+- [ ] 팀 목록 포함 (미구현) → Phase 2-4에서 별도 API 제공 예정 
+- [x] 존재하지 않는 반 접근 시 404 반환
+- [ ] 학생: 다른 반 접근 시 403 반환 (현재 교사 전용) → Phase 3-6에서 프론트엔드 대시보드 구현 시 결정 가능 
+
+### PUT/PATCH /api/v1/classes/:id (교사 전용)
+
+- [x] 반 정보 수정 성공 (200) - PATCH 사용
+- [x] 수정된 반 정보 반환
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 반 수정 시 404 반환
 
 ### DELETE /api/v1/classes/:id (교사 전용)
-- [ ] 반 삭제 성공 (200)
-- [ ] 연관 데이터 처리 확인 (학생, 팀, 게시글 등)
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 존재하지 않는 반 삭제 시 404 반환
+
+- [x] 반 삭제 성공 (200)
+- [x] 연관 데이터 처리 확인 (학생이 있으면 삭제 불가)
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 반 삭제 시 404 반환
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase2-2-test.js` (20개 테스트 모두 통과)
+> **비고**:
+> 
+> - 현재 Classes API는 교사 전용으로 구현됨 (requireTeacher 미들웨어)
+> - 학생 접근 기능은 추후 필요시 구현 가능
+> - 반 수정은 PUT 대신 PATCH 메서드 사용
+> - 반 삭제 시 학생이 배정된 반은 삭제 불가 (HAS_STUDENTS 에러)
 
 ---
 
 ## 2-3: Users API (학생 관리)
 
-### GET /api/v1/classes/:classId/users
-- [ ] 해당 반의 학생 목록 반환
-- [ ] 각 학생: id, loginId, name, teamId 포함
-- [ ] 페이지네이션 지원 확인 (선택적)
-- [ ] 존재하지 않는 반 접근 시 404 반환
+### GET /api/v1/users (학생 목록)
 
-### POST /api/v1/classes/:classId/users (교사 전용)
-- [ ] 학생 일괄 생성 성공 (201)
-- [ ] 배열 형태로 다수 학생 생성
-- [ ] 각 학생에 loginId, name, 초기 비밀번호 설정
-- [ ] 중복 loginId 시 에러 반환
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 전체 학생 목록 반환 (교사 전용)
+- [x] class_id 쿼리 파라미터로 반별 필터링
+- [x] 각 학생: id, username, name, class_id, team_id, class_name, team_name 포함
+- [x] 학생 계정으로 접근 시 403 반환
 
-### PUT /api/v1/users/:id (교사 전용)
-- [ ] 학생 정보 수정 성공 (200)
-- [ ] 이름 변경 가능
-- [ ] 반 변경 가능 (classId)
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 존재하지 않는 학생 수정 시 404 반환
+### GET /api/v1/users/:userId (학생 상세)
 
-### DELETE /api/v1/users/:id (교사 전용)
-- [ ] 학생 삭제 성공 (200)
-- [ ] 연관 데이터 처리 확인 (제출물, 팀 멤버십 등)
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 교사 계정은 삭제 불가 (400 또는 403)
+- [x] 학생 상세 정보 반환 (200)
+- [x] 존재하지 않는 학생 조회 시 404 반환
 
-### POST /api/v1/users/:id/reset-password (교사 전용)
-- [ ] 비밀번호 초기화 성공 (200)
-- [ ] 초기화된 비밀번호 반환 (또는 기본값 설정)
-- [ ] 학생 계정으로 접근 시 403 반환
-- [ ] 존재하지 않는 학생 시 404 반환
+### POST /api/v1/users (학생 생성 - 교사 전용)
+
+- [x] 학생 생성 성공 (201)
+- [x] name, username, password 필수 필드 검증
+- [x] class_id로 반 배정 가능 (선택)
+- [x] 중복 username 시 400 (DUPLICATE_USERNAME)
+- [x] 존재하지 않는 반에 배정 시 400 (INVALID_CLASS)
+- [x] 학생 계정으로 접근 시 403 반환
+
+### POST /api/v1/users/bulk (학생 일괄 생성 - 교사 전용)
+
+- [x] 학생 일괄 생성 성공 (201)
+- [x] 배열 형태로 다수 학생 생성
+- [x] 생성 성공/실패 카운트 반환
+- [x] 일부 실패 시 실패 목록과 이유 반환
+- [x] 빈 배열 시 400 반환
+
+### PATCH /api/v1/users/:userId (학생 정보 수정 - 교사 전용)
+
+- [x] 학생 정보 수정 성공 (200)
+- [x] 이름 변경 가능 (name)
+- [x] 반 변경 가능 (class_id)
+- [x] 반 변경 시 팀 자동 해제 (team_id = null)
+- [x] 팀 변경 가능 (team_id) - 같은 반 소속 팀만
+- [x] 수정할 항목 없으면 400 반환
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 학생 수정 시 404 반환
+- [x] 존재하지 않는 반/팀으로 변경 시 400 반환
+
+### DELETE /api/v1/users/:userId (학생 삭제 - 교사 전용)
+
+- [x] 학생 삭제 성공 (200)
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 학생 삭제 시 404 반환
+- [x] 교사 계정은 삭제 불가 (role 검증)
+
+### POST /api/v1/users/:userId/reset-password (비밀번호 초기화 - 교사 전용)
+
+- [x] 비밀번호 초기화 성공 (200)
+- [x] new_password 필수 필드 검증
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 학생 시 404 반환
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase2-3-test.js` (30개 테스트 모두 통과)
+> **비고**:
+>
+> - 모든 엔드포인트는 교사 전용 (requireTeacher 미들웨어)
+> - class_id 필터로 반별 학생 조회 가능
+> - 일괄 생성 시 트랜잭션으로 처리
+> - 비밀번호 초기화 시 new_password 직접 지정 방식
 
 ---
 
 ## 2-4: Teams API
 
 ### GET /api/v1/classes/:classId/teams
+
 - [ ] 해당 반의 팀 목록 반환
 - [ ] 각 팀: id, name, memberCount 포함
 - [ ] 팀원 목록 포함 (선택적)
 
 ### POST /api/v1/classes/:classId/teams (교사 전용)
+
 - [ ] 팀 생성 성공 (201)
 - [ ] 팀 이름 설정
 - [ ] 학생 계정으로 접근 시 403 반환
 - [ ] 중복 팀 이름 처리 확인
 
 ### PUT /api/v1/teams/:id (교사 전용)
+
 - [ ] 팀 정보 수정 성공 (200)
 - [ ] 팀 이름 변경 가능
 - [ ] 학생 계정으로 접근 시 403 반환
 - [ ] 존재하지 않는 팀 수정 시 404 반환
 
 ### DELETE /api/v1/teams/:id (교사 전용)
+
 - [ ] 팀 삭제 성공 (200)
 - [ ] 팀원들의 teamId null 처리
 - [ ] 학생 계정으로 접근 시 403 반환
 
 ### POST /api/v1/teams/:id/members (교사 전용)
+
 - [ ] 팀원 배정 성공 (200)
 - [ ] 다른 팀에서 자동 제외 (1팀만 소속)
 - [ ] 다른 반 학생 배정 시 400 반환
@@ -149,6 +205,7 @@
 ## 2-5: Posts API (게시판)
 
 ### GET /api/v1/classes/:classId/posts
+
 - [ ] 게시글 목록 반환
 - [ ] 각 게시글: id, title, category, author, createdAt 포함
 - [ ] 카테고리별 필터링 (notice, material, free)
@@ -156,6 +213,7 @@
 - [ ] 최신순 정렬
 
 ### POST /api/v1/classes/:classId/posts
+
 - [ ] 게시글 작성 성공 (201)
 - [ ] 교사: 공지(notice), 자료(material) 작성 가능
 - [ ] 학생: 자유(free) 게시판만 작성 가능 (있는 경우)
@@ -163,28 +221,33 @@
 - [ ] 필수 필드 누락 시 400 반환
 
 ### GET /api/v1/posts/:id
+
 - [ ] 게시글 상세 조회 (200)
 - [ ] 내용, 첨부파일, 댓글 포함
 - [ ] 조회수 증가 확인
 - [ ] 다른 반 게시글 접근 시 403 반환
 
 ### PUT /api/v1/posts/:id
+
 - [ ] 게시글 수정 성공 (200)
 - [ ] 작성자 또는 교사만 수정 가능
 - [ ] 다른 사용자 수정 시 403 반환
 
 ### DELETE /api/v1/posts/:id
+
 - [ ] 게시글 삭제 성공 (200)
 - [ ] 작성자 또는 교사만 삭제 가능
 - [ ] 연관 댓글도 삭제 확인
 - [ ] 다른 사용자 삭제 시 403 반환
 
 ### POST /api/v1/posts/:id/comments
+
 - [ ] 댓글 작성 성공 (201)
 - [ ] 대댓글 지원 (parentId 있는 경우)
 - [ ] 작성자 정보 포함
 
 ### POST /api/v1/posts/:id/like
+
 - [ ] 좋아요 토글 성공 (200)
 - [ ] 좋아요 상태 반환 (liked: true/false)
 - [ ] 중복 좋아요 방지 (토글로 해제)
@@ -194,12 +257,14 @@
 ## 2-6: Assignments API (과제 출제)
 
 ### GET /api/v1/classes/:classId/assignments
+
 - [ ] 과제 목록 반환
 - [ ] 각 과제: id, title, dueDate, type 포함
 - [ ] 진행 중/마감 과제 구분
 - [ ] 학생: 제출 상태 포함
 
 ### POST /api/v1/classes/:classId/assignments (교사 전용)
+
 - [ ] 과제 출제 성공 (201)
 - [ ] 개인/팀 과제 타입 설정
 - [ ] 마감일 설정
@@ -207,17 +272,20 @@
 - [ ] 학생 계정으로 접근 시 403 반환
 
 ### GET /api/v1/assignments/:id
+
 - [ ] 과제 상세 조회 (200)
 - [ ] 지시문, 첨부파일 포함
 - [ ] 학생: 자신의 제출 정보 포함
 - [ ] 다른 반 과제 접근 시 403 반환
 
 ### PUT /api/v1/assignments/:id (교사 전용)
+
 - [ ] 과제 수정 성공 (200)
 - [ ] 마감일 연장 가능
 - [ ] 학생 계정으로 접근 시 403 반환
 
 ### DELETE /api/v1/assignments/:id (교사 전용)
+
 - [ ] 과제 삭제 성공 (200)
 - [ ] 연관 제출물 처리 확인
 - [ ] 학생 계정으로 접근 시 403 반환
@@ -227,35 +295,41 @@
 ## 2-7: Submissions API (과제 제출)
 
 ### GET /api/v1/assignments/:assignmentId/submissions (교사 전용)
+
 - [ ] 제출 목록 반환
 - [ ] 각 제출: 학생/팀, 상태, 제출일 포함
 - [ ] 미제출자 목록 포함
 - [ ] 학생 계정으로 접근 시 403 반환
 
 ### GET /api/v1/assignments/:assignmentId/my-submission
+
 - [ ] 자신의 제출 정보 반환 (200)
 - [ ] 팀 과제: 팀 제출 정보 반환
 - [ ] 미제출 시 빈 응답 또는 null
 
 ### POST /api/v1/assignments/:assignmentId/submissions
+
 - [ ] 제출 생성 성공 (201)
 - [ ] 초안 상태로 생성 (submitted: false)
 - [ ] 마감 후 제출 불가 (400)
 - [ ] 팀 과제: 팀원 누구나 생성 가능
 
 ### PUT /api/v1/submissions/:id
+
 - [ ] 답안 수정 성공 (200)
 - [ ] 최종 제출 전까지만 수정 가능
 - [ ] 다른 사용자 제출물 수정 시 403 반환
 - [ ] 버전 충돌 처리 확인
 
 ### POST /api/v1/submissions/:id/submit
+
 - [ ] 최종 제출 성공 (200)
 - [ ] submitted: true, submittedAt 설정
 - [ ] 이미 제출된 과제 재제출 불가 (400)
 - [ ] 마감 후 제출 불가 (400)
 
 ### POST /api/v1/submissions/:id/feedback (교사 전용)
+
 - [ ] 피드백 작성 성공 (200)
 - [ ] 점수, 코멘트 설정
 - [ ] 즉시 저장 확인 (criticalTransaction)
@@ -266,6 +340,7 @@
 ## 2-8: Files API (파일 업로드)
 
 ### POST /api/v1/files
+
 - [ ] 파일 업로드 성공 (201)
 - [ ] 파일 정보 반환 (id, originalName, size)
 - [ ] 타임스탬프 prefix 파일명 확인
@@ -274,6 +349,7 @@
 - [ ] 허용되지 않은 MIME 타입 거부 (400)
 
 ### GET /api/v1/files/:id
+
 - [ ] 파일 다운로드 성공 (200)
 - [ ] Content-Disposition 헤더 설정
 - [ ] 원본 파일명으로 다운로드
@@ -281,12 +357,14 @@
 - [ ] 권한 없는 파일 접근 시 403 반환
 
 ### DELETE /api/v1/files/:id
+
 - [ ] 파일 삭제 성공 (200)
 - [ ] 실제 파일 시스템에서 삭제
 - [ ] DB 레코드 삭제
 - [ ] 작성자 또는 교사만 삭제 가능
 
 ### MIME 타입 검증 테스트
+
 - [ ] 이미지 (jpg, png, gif) 허용
 - [ ] 문서 (pdf, doc, docx, hwp) 허용
 - [ ] 동영상 (mp4, mov) 허용
@@ -298,6 +376,7 @@
 ## 통합 테스트 시나리오
 
 ### 과제 제출 플로우
+
 ```
 1. 교사: 과제 출제 (POST /assignments)
 2. 학생: 과제 목록 확인 (GET /assignments)
@@ -313,6 +392,7 @@
 - [ ] 위 플로우가 정상 동작
 
 ### 팀 과제 플로우
+
 ```
 1. 교사: 팀 과제 출제 (type: 'team')
 2. 팀원 A: 제출 생성

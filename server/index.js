@@ -49,6 +49,8 @@ import { runMigrations } from './migrations/index.js'
 
 // 라우터
 import authRouter from './routes/auth.js'
+import classRouter from './routes/classes.js'
+import userRouter from './routes/users.js'
 
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
@@ -126,8 +128,11 @@ app.use('/uploads', express.static(path.resolve(UPLOAD_DIR)))
 // 인증 라우터 (로그인/로그아웃/토큰갱신 - 일부는 인증 불필요)
 app.use('/api/v1/auth', authRouter)
 
-// TODO: 인증 필요 라우터 (추후 추가)
-// app.use('/api/v1', authenticate, apiRouter)
+// 반 관리 라우터 (교사 전용 - 라우터 내부에서 인증 처리)
+app.use('/api/v1/classes', classRouter)
+
+// 학생 관리 라우터 (교사 전용 - 라우터 내부에서 인증 처리)
+app.use('/api/v1/users', userRouter)
 
 // ============================================================
 // 7. 기타 라우트
