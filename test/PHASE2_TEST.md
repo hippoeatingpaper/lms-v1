@@ -7,31 +7,38 @@
 ## 2-1: Auth API
 
 ### POST /api/v1/auth/login
-- [ ] 올바른 자격 증명으로 로그인 성공 (200)
-- [ ] Access Token 쿠키 설정 확인
-- [ ] Refresh Token 쿠키 설정 확인
-- [ ] 응답에 사용자 정보 포함 (id, name, role)
-- [ ] 잘못된 아이디로 로그인 실패 (401)
-- [ ] 잘못된 비밀번호로 로그인 실패 (401)
-- [ ] 빈 요청 바디로 로그인 실패 (400)
+- [x] 올바른 자격 증명으로 로그인 성공 (200)
+- [x] Access Token 쿠키 설정 확인
+- [x] Refresh Token 쿠키 설정 확인
+- [x] 응답에 사용자 정보 포함 (id, name, role)
+- [x] 잘못된 아이디로 로그인 실패 (401)
+- [x] 잘못된 비밀번호로 로그인 실패 (401)
+- [x] 빈 요청 바디로 로그인 실패 (400)
 
 ### POST /api/v1/auth/logout
-- [ ] 로그아웃 성공 (200)
-- [ ] Access Token 쿠키 삭제 확인
-- [ ] Refresh Token 쿠키 삭제 확인
-- [ ] 로그아웃 후 인증 필요 API 접근 불가
+- [x] 로그아웃 성공 (200)
+- [x] Access Token 쿠키 삭제 확인
+- [x] Refresh Token 쿠키 삭제 확인
+- [x] 로그아웃 후 인증 필요 API 접근 불가
 
 ### POST /api/v1/auth/refresh
-- [ ] 유효한 Refresh Token으로 갱신 성공 (200)
-- [ ] 새 Access Token 발급 확인
-- [ ] 만료된 Refresh Token으로 갱신 실패 (401)
-- [ ] 유효하지 않은 Refresh Token으로 갱신 실패 (401)
+- [x] 유효한 Refresh Token으로 갱신 성공 (200)
+- [x] 새 Access Token 발급 확인
+- [x] 만료된 Refresh Token으로 갱신 실패 (401)
+- [x] 유효하지 않은 Refresh Token으로 갱신 실패 (401)
 
 ### GET /api/v1/auth/me
-- [ ] 인증된 사용자 정보 반환 (200)
-- [ ] 교사: id, name, role='teacher' 포함
-- [ ] 학생: id, name, role='student', classId, teamId 포함
-- [ ] 비인증 요청 시 401 반환
+- [x] 인증된 사용자 정보 반환 (200)
+- [x] 교사: id, name, role='teacher' 포함
+- [x] 학생: id, name, role='student', class_id, team_id 포함
+- [x] 비인증 요청 시 401 반환
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase2-1-test.js` (15개 테스트 모두 통과)
+> **비고**:
+> - httpOnly 쿠키 설정으로 JavaScript 접근 불가
+> - Refresh Token Rotation 적용 (갱신 시 새 토큰 발급)
+> - loginLimiter 적용 (username당 5회/15분 제한)
 
 ---
 

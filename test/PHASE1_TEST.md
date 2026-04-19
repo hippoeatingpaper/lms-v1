@@ -44,64 +44,82 @@
 ## 1-2: 역할/반 검증 미들웨어
 
 ### requireRole 테스트
-- [ ] `requireRole('teacher')` - 교사 접근 허용
-- [ ] `requireRole('teacher')` - 학생 접근 거부 (403)
-- [ ] `requireRole('student')` - 학생 접근 허용
-- [ ] `requireRole('student')` - 교사 접근 거부 (403)
-- [ ] `requireRole('teacher', 'student')` - 둘 다 허용
-- [ ] 권한 부족 시 에러 코드 `FORBIDDEN` 반환
+- [x] `requireRole('teacher')` - 교사 접근 허용
+- [x] `requireRole('teacher')` - 학생 접근 거부 (403)
+- [x] `requireRole('student')` - 학생 접근 허용
+- [x] `requireRole('student')` - 교사 접근 거부 (403)
+- [x] `requireRole('teacher', 'student')` - 둘 다 허용
+- [x] 권한 부족 시 에러 코드 `FORBIDDEN` 반환
 
-### requireClassAccess 테스트
-- [ ] 교사 - 모든 반 접근 허용
-- [ ] 학생 - 자신의 반 접근 허용
-- [ ] 학생 - 다른 반 접근 거부 (403)
-- [ ] URL 파라미터 `classId` 검증
-- [ ] 존재하지 않는 반 접근 시 404 반환
+### requireClassAccess 테스트 *(실제 함수명: verifyClassAccess)*
+- [x] 교사 - 모든 반 접근 허용
+- [x] 학생 - 자신의 반 접근 허용
+- [x] 학생 - 다른 반 접근 거부 (403)
+- [x] URL 파라미터 `classId` 검증
+- [x] 존재하지 않는 반 접근 시 403 반환 *(학생 기준, DB 재확인 방식)*
 
-### requireTeamAccess 테스트
-- [ ] 교사 - 모든 팀 접근 허용
-- [ ] 학생 - 자신의 팀 접근 허용
-- [ ] 학생 - 다른 팀 접근 거부 (403)
-- [ ] 팀에 속하지 않은 학생 접근 거부 (403)
-- [ ] 존재하지 않는 팀 접근 시 404 반환
+### requireTeamAccess 테스트 *(실제 함수명: verifyTeamAccess)*
+- [x] 교사 - 모든 팀 접근 허용
+- [x] 학생 - 자신의 팀 접근 허용
+- [x] 학생 - 다른 팀 접근 거부 (403)
+- [x] 팀에 속하지 않은 학생 접근 거부 (403)
+- [x] 존재하지 않는 팀 접근 시 403 반환 *(학생 기준, DB 재확인 방식)*
 
 ### 미들웨어 조합 테스트
 ```javascript
 // 예: 반 게시판 접근
 router.get('/classes/:classId/posts',
   authenticate,
-  requireClassAccess,
+  verifyClassAccess,
   getPosts
 )
 ```
-- [ ] 인증 → 반 접근 순서로 검증
-- [ ] 각 단계에서 적절한 에러 반환
+- [x] 인증 → 반 접근 순서로 검증
+- [x] 각 단계에서 적절한 에러 반환
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase1-2-test.js` (20개 테스트 모두 통과)
+> **비고**:
+> - 미들웨어 함수명이 스펙과 다름: `requireClassAccess` → `verifyClassAccess`, `requireTeamAccess` → `verifyTeamAccess`
+> - DB 재확인 방식 사용: JWT 클레임만 믿지 않고 DB에서 실제 소속 재확인 (클레임 위조 방지)
+> - 존재하지 않는 반/팀 접근 시 학생은 403 반환 (자신의 소속과 불일치로 처리됨)
 
 ---
 
 ## 1-3: Rate Limiting
 
-### 로그인 시도 제한 테스트
-- [ ] 15분 내 5회 로그인 실패 후 차단
-- [ ] 차단 시 429 응답 반환
-- [ ] 에러 메시지에 재시도 가능 시간 포함
-- [ ] 15분 후 차단 해제 확인
-- [ ] IP 기반 제한 동작 확인
+### 로그인 시도 제한 테스트 *(loginLimiter - username 기반)*
+- [x] 15분 내 5회 로그인 시도 후 차단 (6번째부터 429)
+- [x] 차단 시 429 응답 반환
+- [x] 에러 메시지에 재시도 가능 시간 포함 ("15분 후 다시 시도")
+- [x] 에러 코드 `TOO_MANY_REQUESTS` 반환
+- [x] username 기반 제한 - 다른 username은 별도 카운트
 
-### 일반 API 제한 테스트
-- [ ] 1분 내 100회 요청 허용
-- [ ] 100회 초과 시 429 응답
-- [ ] 제한 해제 후 정상 접근 가능
-- [ ] 사용자별(또는 IP별) 개별 카운트
+### 일반 API 제한 테스트 *(apiLimiter - IP당 100회/분)*
+- [x] 첫 요청 성공 (200)
+- [x] RateLimit 헤더로 remaining 확인 가능
+- [x] 요청마다 remaining 값 감소 확인
+- [x] 사용자별(또는 IP별) 개별 카운트
 
-### Rate Limit 헤더 테스트
-- [ ] `X-RateLimit-Limit` 헤더 반환
-- [ ] `X-RateLimit-Remaining` 헤더 반환
-- [ ] `X-RateLimit-Reset` 헤더 반환
+### Rate Limit 헤더 테스트 *(standardHeaders: true)*
+- [x] `RateLimit-Limit` 헤더 반환
+- [x] `RateLimit-Remaining` 헤더 반환
+- [x] `RateLimit-Reset` 헤더 반환
 
 ### 예외 경로 테스트
-- [ ] 정적 파일 요청은 Rate Limit 미적용
-- [ ] 헬스체크 경로 Rate Limit 미적용 (있는 경우)
+- [x] 정적 파일 요청 (`/uploads`) Rate Limit 미적용
+- [x] 헬스체크 경로 `/api/v1/health` globalLimiter 적용됨 (API 경로이므로)
+
+### 인증된 사용자 Rate Limit 테스트 *(authenticatedLimiter - userID 기반)*
+- [x] 인증된 사용자 API Rate Limit 동작 확인
+- [x] 사용자 ID 기반 별도 카운트 확인
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase1-3-test.js` (15개 테스트 모두 통과)
+> **비고**:
+> - `standardHeaders: true` 사용으로 `X-RateLimit-*` 대신 `RateLimit-*` 헤더 반환
+> - NAT 환경 대응: loginLimiter는 username 기반, authenticatedLimiter는 userID 기반
+> - globalLimiter: IP당 1000회/분 (NAT 환경에서 30명 공유 시 33회/분/학생)
 
 ---
 
