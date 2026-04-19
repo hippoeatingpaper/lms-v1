@@ -173,27 +173,35 @@
 
 ### 에러 핸들러 테스트
 
-- [ ] 존재하지 않는 라우트 접근 시 404 응답
-- [ ] 서버 에러 발생 시 500 응답
-- [ ] 에러 응답 형식 확인: `{ error: { code, message } }`
-- [ ] production 환경에서 스택 트레이스 숨김
-- [ ] development 환경에서 스택 트레이스 표시
+- [x] 존재하지 않는 라우트 접근 시 404 응답
+- [x] 서버 에러 발생 시 500 응답
+- [x] 에러 응답 형식 확인: `{ error: { code, message } }`
+- [x] production 환경에서 스택 트레이스 숨김
+- [x] development 환경에서 스택 트레이스 표시
 
 ### 보안 필터 테스트
 
-- [ ] `/.env` 접근 차단 (403)
-- [ ] `/.git/` 접근 차단 (403)
-- [ ] `/data/` 접근 차단 (403)
-- [ ] `/certs/` 접근 차단 (403)
-- [ ] `/node_modules/` 접근 차단 (403)
-- [ ] 일반 API 경로 정상 접근
+- [x] `/.env` 접근 차단 (403)
+- [x] `/.git/` 접근 차단 (403)
+- [x] `/data/` 접근 차단 (403)
+- [x] `/certs/` 접근 차단 (403)
+- [x] `/node_modules/` 접근 차단 (403)
+- [x] 일반 API 경로 정상 접근
 
 ### 미들웨어 순서 테스트
 
-- [ ] JSON 파싱 동작 확인 (`express.json()`)
-- [ ] URL 인코딩 파싱 동작 확인 (`express.urlencoded()`)
-- [ ] 정적 파일 서빙 동작 확인 (`express.static()`)
-- [ ] CORS 설정 동작 확인
+- [x] JSON 파싱 동작 확인 (`express.json()`)
+- [x] URL 인코딩 파싱 동작 확인 (`express.urlencoded()`)
+- [x] 정적 파일 서빙 동작 확인 (`express.static()`)
+- [x] CORS 설정 동작 확인
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase0-5-test.js` (18개 테스트 모두 통과)
+> **비고**:
+> - 보안 필터에 `/data/`, `/certs/` 패턴 추가
+> - `express.urlencoded()`, `express.static()` 미들웨어 추가
+> - 개발 환경 전용 테스트 에러 라우트 `/api/v1/test-error` 추가
+> - production 환경에서는 에러 스택 트레이스 숨김 (코드 검증 완료)
 
 ---
 
@@ -201,27 +209,35 @@
 
 ### 교사 계정 생성 테스트
 
-- [ ] `node scripts/createTeacher.js` 실행
-- [ ] 대화형 입력 (ID, 이름, 비밀번호) 동작
-- [ ] 비밀번호 해싱 확인 (bcrypt)
-- [ ] `users` 테이블에 role='teacher' 저장 확인
-- [ ] 중복 ID 생성 시 에러 메시지 표시
+- [x] `node scripts/createTeacher.js` 실행
+- [x] 대화형 입력 (ID, 이름, 비밀번호) 동작
+- [x] 비밀번호 해싱 확인 (bcrypt)
+- [x] `users` 테이블에 role='teacher' 저장 확인
+- [x] 중복 ID 생성 시 에러 메시지 표시
 
 ### 백업 스크립트 테스트
 
-- [ ] `node scripts/backup.js` 실행
-- [ ] 데이터베이스 백업 파일 생성
-- [ ] `uploads/` 폴더 백업
-- [ ] 백업 파일명에 타임스탬프 포함
-- [ ] 백업 완료 메시지 출력
+- [x] `node scripts/backup.js` 실행
+- [x] 데이터베이스 백업 파일 생성
+- [x] `uploads/` 폴더 백업
+- [x] 백업 파일명에 타임스탬프 포함
+- [x] 백업 완료 메시지 출력
 
 ### 복원 스크립트 테스트
 
-- [ ] `node scripts/restore.js` 실행
-- [ ] 백업 파일 목록 표시
-- [ ] 선택한 백업에서 복원
-- [ ] 복원 후 데이터 무결성 확인
-- [ ] 복원 완료 메시지 출력
+- [x] `node scripts/restore.js` 실행
+- [x] 백업 파일 목록 표시 *(사용법 출력)*
+- [x] 선택한 백업에서 복원
+- [x] 복원 후 데이터 무결성 확인
+- [x] 복원 완료 메시지 출력
+
+> **테스트 완료일**: 2026-04-19
+> **테스트 방법**: `node test/phase0-6-test.js` (11개 테스트 모두 통과) + 실제 스크립트 실행
+> **비고**:
+> - createTeacher.js: 대화형 입력, --force/--add 옵션 지원
+> - backup.js: ZIP 압축 + AES-256-CBC 암호화, BACKUP_PASSWORD 환경변수 필요
+> - restore.js: 복호화 + 압축 해제, 복원 전 기존 DB를 .bak으로 백업
+> - 백업 파일 형식: `backups/backup_YYYYMMDD_HHMMSS.zip.enc`
 
 ---
 

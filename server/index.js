@@ -10,6 +10,10 @@ import path from 'path'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
+// 미들웨어
+import { blockSensitivePaths } from './middleware/securityFilter.js'
+import { errorHandler } from './middleware/errorHandler.js'
+
 // DB 모듈
 import {
   initDatabase,
@@ -54,7 +58,14 @@ function ensureDirectories() {
 // ============================================================
 const app = express()
 
-// CORS 설정
+// ============================================================
+// 2-1. 미들웨어 순서대로 적용
+// ============================================================
+
+// 1. 보안 필터 (가장 먼저 - 민감 경로 차단)
+app.use(blockSensitivePaths)
+
+// 2. CORS 설정
 const allowedOrigins = [
   `http://localhost:${PORT}`,
   `https://localhost:${PORT}`,
@@ -74,9 +85,13 @@ app.use(cors({
   credentials: true,
 }))
 
-// 기본 미들웨어
+// 3. 기본 미들웨어
 app.use(cookieParser())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// 4. 정적 파일 서빙 (uploads 디렉터리)
+app.use('/uploads', express.static(path.resolve(UPLOAD_DIR)))
 
 // ============================================================
 // 3. 기본 라우트 (임시 - 추후 라우터로 분리)
@@ -90,12 +105,25 @@ app.get('/api/v1/health', (req, res) => {
   })
 })
 
+// 테스트용 에러 라우트 (개발 환경에서만)
+if (NODE_ENV === 'development') {
+  app.get('/api/v1/test-error', (req, res, next) => {
+    const error = new Error('테스트 에러입니다.')
+    error.code = 'TEST_ERROR'
+    error.statusCode = 500
+    next(error)
+  })
+}
+
 // 404 핸들러
 app.use('/api', (req, res) => {
   res.status(404).json({
     error: { code: 'NOT_FOUND', message: '요청한 API를 찾을 수 없습니다.' }
   })
 })
+
+// 4. 에러 핸들러 (가장 마지막)
+app.use(errorHandler)
 
 // ============================================================
 // 4. HTTP/HTTPS 서버 생성
