@@ -2,6 +2,39 @@
 
 > 게시판(공지/자료/공개제출물), 댓글, 좋아요 화면의 프론트엔드 구현 스펙
 
+## 권한 체계
+
+### 권한 표
+| 작업 | 교사 | 학생 |
+|------|------|------|
+| 게시글 작성 | O | X |
+| 게시글 수정 | 모든 글 | 본인 글만 |
+| 게시글 삭제 | 모든 글 | 본인 글만 |
+| 댓글 작성 | O | O |
+| 댓글 삭제 | 모든 댓글 | 본인 댓글만 |
+
+### 권한 계산 유틸리티
+```ts
+// 게시글 수정/삭제 권한
+function canModifyPost(user: User, post: Post): boolean {
+  if (user.role === 'teacher') return true
+  return post.author.id === user.id
+}
+
+// 댓글 삭제 권한
+function canDeleteComment(user: User, comment: Comment): boolean {
+  if (user.role === 'teacher') return true
+  return comment.author.id === user.id
+}
+```
+
+### UI 표시 규칙
+- **게시글 수정/삭제 버튼**: `canModifyPost(user, post)`가 true일 때만 표시
+- **댓글 삭제 버튼**: `canDeleteComment(user, comment)`가 true일 때만 표시
+- **글쓰기 버튼**: `user.role === 'teacher'`일 때만 표시
+
+---
+
 ## 페이지 구조
 
 ### 1. 게시판 (Board.tsx)
@@ -68,7 +101,8 @@
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ ← 게시물                           [공지]       │
+│ ← 게시물                [수정][삭제]  [공지]    │
+│                         ↑ canModifyPost 시 표시 │
 ├─────────────────────────────────────────────────┤
 │ 4월 수업 안내                                   │
 │ 김선생 · 2026-04-15 09:00                       │
@@ -243,7 +277,7 @@ interface CommentItemProps {
   body: string
   author: { id: number; name: string }
   createdAt: string
-  canDelete: boolean
+  canDelete: boolean  // canDeleteComment(user, comment) 결과 전달
   onDelete: () => void
 }
 
@@ -266,6 +300,16 @@ function CommentItem({ body, author, createdAt, canDelete, onDelete }: CommentIt
     </div>
   )
 }
+
+// 사용 예시
+{comments.map(comment => (
+  <CommentItem
+    key={comment.id}
+    {...comment}
+    canDelete={canDeleteComment(user, comment)}
+    onDelete={() => handleDeleteComment(comment.id)}
+  />
+))}
 ```
 
 ### CommentInput (댓글 입력)
@@ -409,6 +453,42 @@ const handleLikeToggle = async () => {
 
 ---
 
+## 게시글 상세 액션 버튼
+
+```tsx
+// PostDetail.tsx 또는 PostDetailHeader.tsx
+function PostActions({ post }: { post: PostDetail }) {
+  const user = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
+
+  // 수정/삭제 권한 확인
+  const canModify = canModifyPost(user, post)
+
+  if (!canModify) return null
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(`/class/${post.class_id}/board/${post.id}/edit`)}
+      >
+        <Edit size={14} /> 수정
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => handleDelete(post.id)}
+      >
+        <Trash2 size={14} /> 삭제
+      </Button>
+    </div>
+  )
+}
+```
+
+---
+
 ## API 호출
 
 ```ts
@@ -422,11 +502,20 @@ const { post } = await api<{ post: PostDetail }>(
   `/posts/${postId}`
 )
 
-// 게시물 작성
+// 게시물 작성 (교사 전용)
 await api(`/classes/${classId}/posts`, {
   method: 'POST',
   body: JSON.stringify({ title, content, type, file_ids: uploadedFileIds })
 })
+
+// 게시물 수정 (canModifyPost 권한 필요)
+await api(`/posts/${postId}`, {
+  method: 'PATCH',
+  body: JSON.stringify({ title, content, file_ids })
+})
+
+// 게시물 삭제 (canModifyPost 권한 필요)
+await api(`/posts/${postId}`, { method: 'DELETE' })
 
 // 댓글 목록
 const { comments } = await api<{ comments: Comment[] }>(

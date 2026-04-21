@@ -235,6 +235,7 @@ console.error('[ERROR]', {
 ```javascript
 // 테스트 파일명: *.test.js / *.spec.ts
 // 위치: 동일 폴더 또는 __tests__/
+// 테스트 시 서버를 종료하는 과정에서 claude code를 종료시키지 않도록 주의하세요. 
 
 describe('AuthService', () => {
   it('should return token on valid credentials', async () => {
@@ -248,17 +249,20 @@ describe('AuthService', () => {
 ## 8. 체크리스트
 
 ### 기능 구현 전
+
 - [ ] 해당 SPEC 파일 읽음
 - [ ] 관련 기존 코드 파악
 - [ ] API 엔드포인트/응답 형식 확인
 
 ### 코드 작성 후
+
 - [ ] 에러 처리 완료
 - [ ] 타입 정의 완료 (TS)
 - [ ] 불필요한 console.log 제거
 - [ ] 린트 에러 없음
 
 ### 커밋 전
+
 - [ ] 관련 파일만 스테이징
 - [ ] 커밋 메시지 규칙 준수
 - [ ] .env, 인증서 등 민감파일 제외

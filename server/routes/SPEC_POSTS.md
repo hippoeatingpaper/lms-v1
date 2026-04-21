@@ -130,7 +130,7 @@ Response: { "post": {...} }
 
 ```
 PATCH /api/v1/posts/:id
-Authorization: teacher (author only)
+Authorization: teacher (모든 게시글 수정 가능)
 
 Body: {
   "title": "수정된 제목",
@@ -142,22 +142,24 @@ Response: { "post": {...} }
 ```
 
 **로직**:
-1. author_id === user.id 확인 (본인 글만 수정)
-2. 기존 파일 연결 해제 후 새 파일 연결
+1. 교사: 모든 게시글 수정 가능 (본인 글이 아니어도 수정 가능)
+2. 학생: 본인 글만 수정 가능
+3. 기존 파일 연결 해제 후 새 파일 연결
 
 ### 게시물 삭제 (교사)
 
 ```
 DELETE /api/v1/posts/:id
-Authorization: teacher (author only)
+Authorization: teacher (모든 게시글 삭제 가능)
 
 Response: { "ok": true }
 ```
 
 **로직**:
-1. author_id === user.id 확인
-2. 연결된 comments, likes는 CASCADE로 자동 삭제
-3. 연결된 files의 post_id를 NULL로 설정 (파일 자체는 유지)
+1. 교사: 모든 게시글 삭제 가능 (본인 글이 아니어도 삭제 가능)
+2. 학생: 본인 글만 삭제 가능
+3. 연결된 comments, likes는 CASCADE로 자동 삭제
+4. 연결된 files의 post_id를 NULL로 설정 (파일 자체는 유지)
 
 ---
 
@@ -265,11 +267,23 @@ function canAccessPost(user, post) {
 }
 ```
 
-### 게시물 수정/삭제 권한
+### 게시물 수정 권한
 ```js
-// 교사: 본인이 작성한 글만 수정/삭제
+// 교사: 모든 게시글 수정 가능
 function canModifyPost(user, post) {
-  return user.role === 'teacher' && post.author_id === user.id
+  if (user.role === 'teacher') return true
+  // 학생: 본인 글만
+  return post.author_id === user.id
+}
+```
+
+### 게시물 삭제 권한
+```js
+// 교사: 모든 게시글 삭제 가능
+function canDeletePost(user, post) {
+  if (user.role === 'teacher') return true
+  // 학생: 본인 글만
+  return post.author_id === user.id
 }
 ```
 

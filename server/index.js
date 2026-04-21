@@ -51,6 +51,8 @@ import { runMigrations } from './migrations/index.js'
 import authRouter from './routes/auth.js'
 import classRouter from './routes/classes.js'
 import userRouter from './routes/users.js'
+import teamRouter, { getTeamsByClass, createTeam } from './routes/teams.js'
+import postRouter, { getPostsByClass, createPost, deleteComment } from './routes/posts.js'
 
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
@@ -133,6 +135,22 @@ app.use('/api/v1/classes', classRouter)
 
 // 학생 관리 라우터 (교사 전용 - 라우터 내부에서 인증 처리)
 app.use('/api/v1/users', userRouter)
+
+// 팀 관리 라우터 (교사 전용)
+// /api/v1/classes/:classId/teams - 반별 팀 목록/생성
+app.get('/api/v1/classes/:classId/teams', authenticate, requireTeacher, getTeamsByClass)
+app.post('/api/v1/classes/:classId/teams', authenticate, requireTeacher, createTeam)
+// /api/v1/teams - 팀 단일 관리 및 팀원 관리
+app.use('/api/v1/teams', teamRouter)
+
+// 게시판 라우터
+// /api/v1/classes/:classId/posts - 반별 게시물 목록/작성
+app.get('/api/v1/classes/:classId/posts', authenticate, getPostsByClass)
+app.post('/api/v1/classes/:classId/posts', authenticate, requireTeacher, createPost)
+// /api/v1/posts - 게시물 상세/수정/삭제, 댓글, 좋아요
+app.use('/api/v1/posts', postRouter)
+// /api/v1/comments - 댓글 삭제
+app.delete('/api/v1/comments/:commentId', authenticate, deleteComment)
 
 // ============================================================
 // 7. 기타 라우트

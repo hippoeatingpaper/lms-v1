@@ -4,10 +4,16 @@
 import initSqlJs from 'sql.js'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
-// 환경 변수 및 상수
-const DB_PATH = process.env.DB_PATH || './data/database.db'
-const BACKUP_DIR = './data/backups'
+// __dirname 설정 (ESM 환경)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// 프로젝트 루트 기준 경로 설정
+const PROJECT_ROOT = path.resolve(__dirname, '..')
+const DB_PATH = process.env.DB_PATH || path.join(PROJECT_ROOT, 'data', 'database.db')
+const BACKUP_DIR = path.join(PROJECT_ROOT, 'data', 'backups')
 const BACKUP_INTERVAL = 5 * 60 * 1000  // 5분
 const MAX_BACKUPS = 3
 const DEBOUNCE_DELAY = 2000  // 2초
