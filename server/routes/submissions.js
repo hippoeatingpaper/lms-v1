@@ -1,9 +1,13 @@
 // server/routes/submissions.js
-// 과제 제출 API (임시저장, 최종제출, 피드백, 공개)
+// 과제 제출 API (임시저장, 최종제출, 피드백, 공개, 파일 업로드)
 
 import { Router } from 'express'
-import { db, criticalTransaction, debouncedSave } from '../db.js'
+import path from 'path'
+import fsPromises from 'fs/promises'
+import { db, criticalTransaction, debouncedSave, saveImmediate } from '../db.js'
 import { authenticate, requireTeacher } from '../middleware/auth.js'
+import { uploadVideo, validateFileType, validateFilePath, UPLOAD_DIR } from '../middleware/upload.js'
+import { uploadLimiter } from '../middleware/rateLimit.js'
 
 const router = Router()
 
@@ -597,6 +601,123 @@ router.post('/:id/publish', authenticate, requireTeacher, (req, res) => {
 
   res.json({ post_id: postId })
 })
+
+// ============================================================
+// 제출물 파일 업로드 (학생)
+// POST /api/v1/submissions/:id/files
+// ============================================================
+
+router.post('/:id/files',
+  authenticate,
+  uploadLimiter,
+  uploadVideo.single('file'),  // 동영상 허용 (100MB)
+  validateFileType,
+  async (req, res) => {
+    const { id } = req.params
+    const { question_id } = req.body
+    const user = req.user
+    const file = req.file
+
+    // 제출물 확인
+    const submission = db.get('SELECT * FROM submissions WHERE id = ?', [id])
+    if (!submission) {
+      await fsPromises.unlink(file.path).catch(() => {})
+      return res.status(404).json({
+        error: { code: 'NOT_FOUND', message: '제출물을 찾을 수 없습니다.' }
+      })
+    }
+
+    // 권한 검증: 제출자 본인 또는 팀원
+    const isSubmitter = submission.submitter_id === user.id
+    const isTeamMember = submission.team_id && submission.team_id === user.team_id
+
+    if (!isSubmitter && !isTeamMember) {
+      await fsPromises.unlink(file.path).catch(() => {})
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: '파일 업로드 권한이 없습니다.' }
+      })
+    }
+
+    // 과제 마감 확인
+    const assignment = db.get('SELECT * FROM assignments WHERE id = ?', [submission.assignment_id])
+    if (assignment.due_at && new Date() > new Date(assignment.due_at)) {
+      await fsPromises.unlink(file.path).catch(() => {})
+      return res.status(400).json({
+        error: { code: 'DEADLINE_PASSED', message: '마감 시간이 지났습니다.' }
+      })
+    }
+
+    // question_id 검증 (있는 경우)
+    if (question_id) {
+      const question = db.get(
+        'SELECT * FROM assignment_questions WHERE id = ? AND assignment_id = ?',
+        [question_id, submission.assignment_id]
+      )
+      if (!question) {
+        await fsPromises.unlink(file.path).catch(() => {})
+        return res.status(400).json({
+          error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 질문입니다.' }
+        })
+      }
+      if (question.question_type !== 'file') {
+        await fsPromises.unlink(file.path).catch(() => {})
+        return res.status(400).json({
+          error: { code: 'VALIDATION_ERROR', message: '파일 업로드 질문이 아닙니다.' }
+        })
+      }
+    }
+
+    // 기존 파일 삭제 (같은 question_id에 대해 덮어쓰기)
+    if (question_id) {
+      const existingFile = db.get(
+        'SELECT * FROM files WHERE submission_id = ? AND question_id = ?',
+        [id, question_id]
+      )
+
+      if (existingFile) {
+        const oldPath = path.resolve(UPLOAD_DIR, existingFile.filepath)
+        if (validateFilePath(oldPath)) {
+          await fsPromises.unlink(oldPath).catch(() => {})
+        }
+        db.run('DELETE FROM files WHERE id = ?', [existingFile.id])
+      }
+    }
+
+    // 새 파일 저장
+    const relativePath = path.relative(path.resolve(UPLOAD_DIR), file.path)
+
+    const { lastInsertRowid } = db.run(
+      `INSERT INTO files (
+        filename, original_name, filepath, mimetype, size,
+        class_id, submission_id, question_id, uploader_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        file.filename,
+        file.originalname,
+        relativePath,
+        file.detectedMime,
+        file.size,
+        user.class_id,
+        id,
+        question_id || null,
+        user.id,
+      ]
+    )
+
+    saveImmediate('submission_file_upload')
+
+    res.json({
+      file: {
+        id: lastInsertRowid,
+        filename: file.filename,
+        original_name: file.originalname,
+        mimetype: file.detectedMime,
+        size: file.size,
+        url: `/api/v1/files/${lastInsertRowid}/download`,
+      }
+    })
+  }
+)
 
 // ============================================================
 // 제출물 상세 조회 (교사)

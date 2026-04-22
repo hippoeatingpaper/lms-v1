@@ -108,3 +108,28 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 })
+
+// ============================================================
+// 파일 업로드 제한 (userID 기반)
+// ============================================================
+
+/**
+ * 파일 업로드 Rate Limiter
+ * - 사용자당 1분 10회 제한
+ * - authenticate 미들웨어 이후에 적용
+ *
+ * 적용: POST /api/v1/files, POST /api/v1/submissions/:id/files
+ */
+export const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,  // 1분
+  max: 10,               // 사용자당 10회
+  keyGenerator: (req) => req.user?.id?.toString() || req.ip,
+  message: {
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: '파일 업로드 횟수를 초과했습니다. 잠시 후 다시 시도하세요.',
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+})

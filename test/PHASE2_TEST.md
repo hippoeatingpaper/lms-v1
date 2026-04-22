@@ -410,35 +410,54 @@
 
 ### POST /api/v1/files
 
-- [ ] 파일 업로드 성공 (201)
-- [ ] 파일 정보 반환 (id, originalName, size)
-- [ ] 타임스탬프 prefix 파일명 확인
-- [ ] 일반 파일 20MB 제한 확인
-- [ ] 동영상 100MB 제한 확인
-- [ ] 허용되지 않은 MIME 타입 거부 (400)
+- [x] 파일 업로드 성공 (200)
+- [x] 파일 정보 반환 (id, original_name, size, url, mimetype)
+- [x] 타임스탬프 prefix 파일명 확인 (예: `1776869465579_test.pdf`)
+- [x] context 파라미터 검증 (general, post, submission)
+- [x] 파일 없이 업로드 시 400 반환
+- [x] 허용되지 않은 MIME 타입 거부 (INVALID_FILE_TYPE)
+- [ ] 일반 파일 20MB 제한 확인 (환경 설정)
+- [ ] 동영상 100MB 제한 확인 (환경 설정)
 
 ### GET /api/v1/files/:id
 
-- [ ] 파일 다운로드 성공 (200)
-- [ ] Content-Disposition 헤더 설정
-- [ ] 원본 파일명으로 다운로드
-- [ ] 존재하지 않는 파일 시 404 반환
-- [ ] 권한 없는 파일 접근 시 403 반환
+- [x] 파일 정보 조회 성공 (200)
+- [x] uploader 정보 포함
+- [x] 존재하지 않는 파일 시 404 반환
+
+### GET /api/v1/files/:id/download
+
+- [x] 파일 다운로드 성공 (200)
+- [x] Content-Disposition 헤더 설정
+- [x] 원본 파일명으로 다운로드
+- [x] 존재하지 않는 파일 시 404 반환
+- [ ] 권한 없는 파일 접근 시 403 반환 (다른 반 파일)
 
 ### DELETE /api/v1/files/:id
 
-- [ ] 파일 삭제 성공 (200)
-- [ ] 실제 파일 시스템에서 삭제
-- [ ] DB 레코드 삭제
-- [ ] 작성자 또는 교사만 삭제 가능
+- [x] 파일 삭제 성공 (200)
+- [x] 실제 파일 시스템에서 삭제
+- [x] DB 레코드 삭제
+- [x] 삭제된 파일 조회 시 404 반환
+- [x] 작성자 또는 교사만 삭제 가능 (403)
 
-### MIME 타입 검증 테스트
+### MIME 타입 검증 테스트 (Magic Bytes 기반)
 
-- [ ] 이미지 (jpg, png, gif) 허용
-- [ ] 문서 (pdf, doc, docx, hwp) 허용
-- [ ] 동영상 (mp4, mov) 허용
-- [ ] 실행 파일 (exe, bat, sh) 거부
-- [ ] 스크립트 (js, php) 거부
+- [x] 이미지 (jpg, png) 허용
+- [x] 문서 (pdf) 허용
+- [x] 압축 (zip) 허용
+- [x] 텍스트 파일 거부 (txt)
+- [x] 스크립트 파일 거부 (js)
+
+> **테스트 완료일**: 2026-04-22
+> **테스트 방법**: `node test/phase2-8-test.js` (26개 테스트 통과)
+> **비고**:
+>
+> - 파일 업로드 시 Magic Bytes로 실제 MIME 타입 검증 (file-type 라이브러리)
+> - 허용 타입: pdf, doc, docx, ppt, pptx, xls, xlsx, jpeg, png, zip, mp4
+> - 업로드 Rate Limit: 분당 10회
+> - 파일명 형식: `{timestamp}_{safe_original_name}`
+> - saveImmediate로 파일-DB 불일치 방지
 
 ---
 

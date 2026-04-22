@@ -55,6 +55,7 @@ import teamRouter, { getTeamsByClass, createTeam } from './routes/teams.js'
 import postRouter, { getPostsByClass, createPost, deleteComment } from './routes/posts.js'
 import assignmentRouter, { getAssignmentsByClass, createAssignment } from './routes/assignments.js'
 import submissionRouter, { getSubmissionsByAssignment, saveDraft, submitAssignment } from './routes/submissions.js'
+import fileRouter, { getFilesByPost, getFilesBySubmission } from './routes/files.js'
 
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
@@ -122,8 +123,9 @@ app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// 5. 정적 파일 서빙 (uploads 디렉터리)
-app.use('/uploads', express.static(path.resolve(UPLOAD_DIR)))
+// 5. 정적 파일 서빙
+// 주의: uploads 폴더는 직접 서빙하지 않음 (보안)
+// 파일 다운로드는 /api/v1/files/:id/download API를 통해서만 가능
 
 // ============================================================
 // 6. API 라우터
@@ -172,6 +174,14 @@ app.use('/api/v1/submissions', submissionRouter)
 
 // /api/v1/assignments - 과제 상세/수정/삭제 (제출물 라우터 이후에 등록)
 app.use('/api/v1/assignments', assignmentRouter)
+
+// 파일 라우터 (인증 필수)
+// /api/v1/files - 파일 업로드/다운로드/삭제
+app.use('/api/v1/files', authenticate, fileRouter)
+// /api/v1/posts/:postId/files - 게시물 첨부파일 목록
+app.get('/api/v1/posts/:postId/files', authenticate, getFilesByPost)
+// /api/v1/submissions/:submissionId/files - 제출물 첨부파일 목록 (GET)
+app.get('/api/v1/submissions/:submissionId/files', authenticate, getFilesBySubmission)
 
 // ============================================================
 // 7. 기타 라우트

@@ -325,11 +325,15 @@ server/routes/SPEC_ASSIGNMENTS.md를 읽고 Phase 2-7: Submissions API를 구현
 
 ### 2-8: Files API (파일 업로드)
 
-- [ ] `server/middleware/upload.js` (Multer + MIME 검증)
-- [ ] `server/routes/files.js`
-- [ ] `POST /api/v1/files` (파일 업로드)
-- [ ] `GET /api/v1/files/:id` (파일 다운로드)
-- [ ] `DELETE /api/v1/files/:id` (파일 삭제)
+- [x] `server/middleware/upload.js` (Multer + MIME 검증)
+- [x] `server/routes/files.js`
+- [x] `POST /api/v1/files` (파일 업로드)
+- [x] `GET /api/v1/files/:id/download` (파일 다운로드)
+- [x] `GET /api/v1/files/:id` (파일 정보 조회)
+- [x] `DELETE /api/v1/files/:id` (파일 삭제)
+- [x] `POST /api/v1/submissions/:id/files` (제출물 파일 업로드)
+- [x] `GET /api/v1/posts/:postId/files` (게시물 첨부파일 목록)
+- [x] `GET /api/v1/submissions/:submissionId/files` (제출물 첨부파일 목록)
 
 **참조**: `server/middleware/SPEC_UPLOAD.md`
 
@@ -681,13 +685,13 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | ----- | ----------- | ----- |
 | 0     | 인프라         | 6/6 ✅ |
 | 1     | 인증 시스템      | 3/3 ✅ |
-| 2     | REST API    | 7/8   |
+| 2     | REST API    | 8/8 ✅ |
 | 3     | React 프론트엔드 | 0/11  |
 | 4     | 실시간 기능      | 0/5   |
 | 5     | 고급 기능       | 0/3   |
 | 6     | 테스트 및 마무리   | 0/3   |
 
-**전체**: 16/39 단계 완료
+**전체**: 17/39 단계 완료
 
 ---
 
