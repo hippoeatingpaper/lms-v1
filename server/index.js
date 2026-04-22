@@ -53,6 +53,8 @@ import classRouter from './routes/classes.js'
 import userRouter from './routes/users.js'
 import teamRouter, { getTeamsByClass, createTeam } from './routes/teams.js'
 import postRouter, { getPostsByClass, createPost, deleteComment } from './routes/posts.js'
+import assignmentRouter, { getAssignmentsByClass, createAssignment } from './routes/assignments.js'
+import submissionRouter, { getSubmissionsByAssignment, saveDraft, submitAssignment } from './routes/submissions.js'
 
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
@@ -151,6 +153,25 @@ app.post('/api/v1/classes/:classId/posts', authenticate, requireTeacher, createP
 app.use('/api/v1/posts', postRouter)
 // /api/v1/comments - 댓글 삭제
 app.delete('/api/v1/comments/:commentId', authenticate, deleteComment)
+
+// 과제 라우터
+// /api/v1/classes/:classId/assignments - 반별 과제 목록
+app.get('/api/v1/classes/:classId/assignments', authenticate, getAssignmentsByClass)
+// /api/v1/assignments - 과제 출제 (교사)
+app.post('/api/v1/assignments', authenticate, requireTeacher, createAssignment)
+
+// 제출물 라우터 (assignmentRouter보다 먼저 등록해야 함)
+// /api/v1/assignments/:id/submissions - 제출 현황 조회 (교사)
+app.get('/api/v1/assignments/:id/submissions', authenticate, requireTeacher, getSubmissionsByAssignment)
+// /api/v1/assignments/:id/draft - 임시저장 (학생)
+app.post('/api/v1/assignments/:id/draft', authenticate, saveDraft)
+// /api/v1/assignments/:id/submit - 최종 제출 (학생)
+app.post('/api/v1/assignments/:id/submit', authenticate, submitAssignment)
+// /api/v1/submissions - 제출물 상세/피드백/공개
+app.use('/api/v1/submissions', submissionRouter)
+
+// /api/v1/assignments - 과제 상세/수정/삭제 (제출물 라우터 이후에 등록)
+app.use('/api/v1/assignments', assignmentRouter)
 
 // ============================================================
 // 7. 기타 라우트

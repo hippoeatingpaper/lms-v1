@@ -286,12 +286,12 @@ server/routes/SPEC_POSTS.md를 읽고 Phase 2-5: Posts API를 구현해줘
 
 ### 2-6: Assignments API (과제 출제)
 
-- [ ] `server/routes/assignments.js`
-- [ ] `GET /api/v1/classes/:classId/assignments` (과제 목록)
-- [ ] `POST /api/v1/classes/:classId/assignments` (과제 출제)
-- [ ] `GET /api/v1/assignments/:id` (과제 상세)
-- [ ] `PUT /api/v1/assignments/:id` (과제 수정)
-- [ ] `DELETE /api/v1/assignments/:id` (과제 삭제)
+- [x] `server/routes/assignments.js`
+- [x] `GET /api/v1/classes/:classId/assignments` (과제 목록)
+- [x] `POST /api/v1/classes/:classId/assignments` (과제 출제)
+- [x] `GET /api/v1/assignments/:id` (과제 상세)
+- [x] `PUT /api/v1/assignments/:id` (과제 수정)
+- [x] `DELETE /api/v1/assignments/:id` (과제 삭제)
 
 **참조**: `server/routes/SPEC_ASSIGNMENTS.md`
 
@@ -305,13 +305,13 @@ server/routes/SPEC_ASSIGNMENTS.md를 읽고 Phase 2-6: Assignments API를 구현
 
 ### 2-7: Submissions API (과제 제출)
 
-- [ ] `server/routes/submissions.js`
-- [ ] `GET /api/v1/assignments/:assignmentId/submissions` (제출 목록 - 교사)
-- [ ] `GET /api/v1/assignments/:assignmentId/my-submission` (내 제출)
-- [ ] `POST /api/v1/assignments/:assignmentId/submissions` (제출 생성)
-- [ ] `PUT /api/v1/submissions/:id` (답안 수정)
-- [ ] `POST /api/v1/submissions/:id/submit` (최종 제출)
-- [ ] `POST /api/v1/submissions/:id/feedback` (피드백 - 교사)
+- [x] `server/routes/submissions.js`
+- [x] `GET /api/v1/assignments/:id/submissions` (제출 목록 - 교사)
+- [x] `POST /api/v1/assignments/:id/draft` (임시저장 - 학생)
+- [x] `POST /api/v1/assignments/:id/submit` (최종 제출 - 학생)
+- [x] `GET /api/v1/submissions/:id` (제출물 상세 - 교사)
+- [x] `PATCH /api/v1/submissions/:id/feedback` (피드백 - 교사)
+- [x] `POST /api/v1/submissions/:id/publish` (제출물 공개 - 교사)
 
 **참조**: `server/routes/SPEC_ASSIGNMENTS.md`
 
@@ -677,17 +677,17 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 
 ## 진행 상황 요약
 
-| Phase | 설명          | 진행률  |
-| ----- | ----------- | ---- |
+| Phase | 설명          | 진행률   |
+| ----- | ----------- | ----- |
 | 0     | 인프라         | 6/6 ✅ |
 | 1     | 인증 시스템      | 3/3 ✅ |
-| 2     | REST API    | 5/8  |
-| 3     | React 프론트엔드 | 0/11 |
-| 4     | 실시간 기능      | 0/5  |
-| 5     | 고급 기능       | 0/3  |
-| 6     | 테스트 및 마무리   | 0/3  |
+| 2     | REST API    | 7/8   |
+| 3     | React 프론트엔드 | 0/11  |
+| 4     | 실시간 기능      | 0/5   |
+| 5     | 고급 기능       | 0/3   |
+| 6     | 테스트 및 마무리   | 0/3   |
 
-**전체**: 14/39 단계 완료
+**전체**: 16/39 단계 완료
 
 ---
 

@@ -292,82 +292,117 @@
 
 ### GET /api/v1/classes/:classId/assignments
 
-- [ ] 과제 목록 반환
-- [ ] 각 과제: id, title, dueDate, type 포함
-- [ ] 진행 중/마감 과제 구분
-- [ ] 학생: 제출 상태 포함
+- [x] 과제 목록 반환
+- [x] 각 과제: id, title, scope, due_at, author 포함
+- [x] scope별 필터링 (individual/team)
+- [x] 페이지네이션 지원
+- [x] 학생: 제출 상태(submission_status) 포함
 
-### POST /api/v1/classes/:classId/assignments (교사 전용)
+### POST /api/v1/assignments (교사 전용)
 
-- [ ] 과제 출제 성공 (201)
-- [ ] 개인/팀 과제 타입 설정
-- [ ] 마감일 설정
-- [ ] 첨부파일 연결 가능
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 과제 출제 성공 (201)
+- [x] 개인/팀 과제 타입(scope) 설정
+- [x] 마감일(due_at) 설정
+- [x] 다양한 질문 타입 지원 (essay, short, multiple_choice, file)
+- [x] 객관식 질문 옵션 설정 가능
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 필수 필드 누락 시 400 반환 (title, scope, questions)
+- [x] 유효하지 않은 질문 타입 시 400 반환
 
 ### GET /api/v1/assignments/:id
 
-- [ ] 과제 상세 조회 (200)
-- [ ] 지시문, 첨부파일 포함
-- [ ] 학생: 자신의 제출 정보 포함
-- [ ] 다른 반 과제 접근 시 403 반환
+- [x] 과제 상세 조회 (200)
+- [x] 설명(description), 질문 목록(questions) 포함
+- [x] 학생: 자신의 제출 정보(submission, answers) 포함
+- [x] 다른 반 과제 접근 시 403 반환
 
 ### PUT /api/v1/assignments/:id (교사 전용)
 
-- [ ] 과제 수정 성공 (200)
-- [ ] 마감일 연장 가능
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 과제 수정 성공 (200)
+- [x] 마감일 연장 가능
+- [x] 제목, 설명 수정 가능
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 과제 수정 시 404 반환
 
 ### DELETE /api/v1/assignments/:id (교사 전용)
 
-- [ ] 과제 삭제 성공 (200)
-- [ ] 연관 제출물 처리 확인
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 과제 삭제 성공 (200)
+- [x] 연관 제출물(submissions), 응답(answers), 질문(questions) 처리 확인
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 과제 삭제 시 404 반환
+
+> **테스트 완료일**: 2026-04-22
+> **테스트 방법**: `node test/phase2-6-test.js` (40개 테스트 모두 통과)
+> **비고**:
+>
+> - POST /api/v1/assignments (교사 전용) - 과제 출제
+> - 질문 타입: essay(서술형), short(단답형), multiple_choice(객관식), file(파일)
+> - 과제 유형(scope): individual(개인), team(팀)
+> - class_id가 null이면 전체 반 대상 과제
+> - criticalTransaction으로 과제/질문 생성의 원자성 보장
 
 ---
 
 ## 2-7: Submissions API (과제 제출)
 
-### GET /api/v1/assignments/:assignmentId/submissions (교사 전용)
+### POST /api/v1/assignments/:id/draft (임시저장 - 학생)
 
-- [ ] 제출 목록 반환
-- [ ] 각 제출: 학생/팀, 상태, 제출일 포함
-- [ ] 미제출자 목록 포함
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 임시저장 성공 (200, draft 상태로 생성)
+- [x] 임시저장 업데이트 (버전 증가)
+- [x] 팀 과제 임시저장 가능
+- [x] 빈 answers 배열 시 400 반환
+- [x] 존재하지 않는 과제에 임시저장 시 404 반환
 
-### GET /api/v1/assignments/:assignmentId/my-submission
+### POST /api/v1/assignments/:id/submit (최종 제출 - 학생)
 
-- [ ] 자신의 제출 정보 반환 (200)
-- [ ] 팀 과제: 팀 제출 정보 반환
-- [ ] 미제출 시 빈 응답 또는 null
+- [x] 최종 제출 성공 (200)
+- [x] status=submitted, submitted_at 설정
+- [x] 필수 질문 미응답 시 400 반환
+- [x] 마감 후 제출 불가 (DEADLINE_PASSED)
+- [x] 팀 과제 최종 제출 가능
+- [x] 존재하지 않는 과제에 제출 시 404 반환
 
-### POST /api/v1/assignments/:assignmentId/submissions
+### GET /api/v1/assignments/:id/submissions (교사 전용)
 
-- [ ] 제출 생성 성공 (201)
-- [ ] 초안 상태로 생성 (submitted: false)
-- [ ] 마감 후 제출 불가 (400)
-- [ ] 팀 과제: 팀원 누구나 생성 가능
+- [x] 제출 목록 반환
+- [x] 각 제출: submitter, status, submitted_at, has_feedback 포함
+- [x] 통계(stats): total, submitted, draft, not_started
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 과제 조회 시 404 반환
 
-### PUT /api/v1/submissions/:id
+### GET /api/v1/submissions/:id (교사 전용)
 
-- [ ] 답안 수정 성공 (200)
-- [ ] 최종 제출 전까지만 수정 가능
-- [ ] 다른 사용자 제출물 수정 시 403 반환
-- [ ] 버전 충돌 처리 확인
+- [x] 제출물 상세 조회 성공 (200)
+- [x] 질문 및 답변 포함
+- [x] 팀원 정보 포함 (팀 과제인 경우)
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 제출물 조회 시 404 반환
 
-### POST /api/v1/submissions/:id/submit
+### PATCH /api/v1/submissions/:id/feedback (교사 전용)
 
-- [ ] 최종 제출 성공 (200)
-- [ ] submitted: true, submittedAt 설정
-- [ ] 이미 제출된 과제 재제출 불가 (400)
-- [ ] 마감 후 제출 불가 (400)
+- [x] 피드백 작성 성공 (200)
+- [x] 피드백 내용 저장 확인
+- [x] 즉시 저장 확인 (criticalTransaction)
+- [x] 피드백 내용 누락 시 400 반환
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 제출물에 피드백 시 404 반환
 
-### POST /api/v1/submissions/:id/feedback (교사 전용)
+### POST /api/v1/submissions/:id/publish (교사 전용)
 
-- [ ] 피드백 작성 성공 (200)
-- [ ] 점수, 코멘트 설정
-- [ ] 즉시 저장 확인 (criticalTransaction)
-- [ ] 학생 계정으로 접근 시 403 반환
+- [x] 제출물 공개 성공 (게시글 생성, post_id 반환)
+- [x] 이미 공개된 제출물 재공개 시 400 반환 (ALREADY_PUBLISHED)
+- [x] 학생 계정으로 접근 시 403 반환
+- [x] 존재하지 않는 제출물 공개 시 404 반환
+
+> **테스트 완료일**: 2026-04-22
+> **테스트 방법**: `node test/phase2-7-test.js` (41개 테스트 모두 통과)
+> **비고**:
+>
+> - POST /api/v1/assignments/:id/draft - 임시저장 (debouncedSave 사용)
+> - POST /api/v1/assignments/:id/submit - 최종 제출 (criticalTransaction 사용)
+> - 학생은 과제 상세 조회(GET /api/v1/assignments/:id)에서 본인/팀 제출물 확인 가능
+> - 팀 과제: 같은 팀원 누구나 제출 가능, 팀 제출물 공유
+> - 피드백/공개는 criticalTransaction으로 즉시 저장
 
 ---
 
