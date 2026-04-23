@@ -7,25 +7,9 @@ import { StudentLayout, StudentProfile } from './layouts/StudentLayout'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { ClassHome } from './pages/ClassHome'
-
-// Placeholder 페이지들 - 이후 Phase에서 구현
-function AdminClasses() {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-medium">반 관리</h1>
-      <p className="text-sm text-gray-500">Phase 3-7에서 구현 예정</p>
-    </div>
-  )
-}
-
-function AdminUsers() {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-medium">학생 관리</h1>
-      <p className="text-sm text-gray-500">Phase 3-7에서 구현 예정</p>
-    </div>
-  )
-}
+import { AdminClasses } from './pages/AdminClasses'
+import { AdminUsers } from './pages/AdminUsers'
+import { AdminTeams } from './pages/AdminTeams'
 
 function Board() {
   return (
@@ -119,6 +103,7 @@ export default function App() {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin/classes" element={<AdminClasses />} />
+        <Route path="/admin/classes/:classId/teams" element={<AdminTeams />} />
         <Route path="/admin/users" element={<AdminUsers />} />
       </Route>
 
