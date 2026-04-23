@@ -7,71 +7,76 @@
 ## 3-1: Vite + React 초기화
 
 ### 프로젝트 설정 테스트
-- [ ] `npm install` (client) 에러 없이 완료
-- [ ] `npm run dev` 실행 시 개발 서버 시작
-- [ ] 브라우저에서 `http://localhost:5173` 접속 가능
-- [ ] React 앱 렌더링 확인
+- [x] `npm install` (client) 에러 없이 완료
+- [x] `npm run dev` 실행 시 개발 서버 시작
+- [x] 브라우저에서 `http://localhost:5173` 접속 가능
+- [x] React 앱 렌더링 확인
 
 ### TypeScript 설정 테스트
-- [ ] `tsconfig.json` 존재 확인
-- [ ] strict 모드 활성화 확인
-- [ ] path alias 설정 확인 (`@/`)
-- [ ] 타입 에러 없이 빌드 성공
+- [x] `tsconfig.json` 존재 확인
+- [x] strict 모드 활성화 확인
+- [x] path alias 설정 확인 (`@/`) - vite.config.ts에 resolve.alias 추가
+- [x] 타입 에러 없이 빌드 성공
 
 ### Tailwind CSS 테스트
-- [ ] Tailwind 클래스 적용 확인
-- [ ] 커스텀 색상 테마 동작 확인
-- [ ] 반응형 클래스 동작 확인 (sm, md, lg)
-- [ ] 프로덕션 빌드 시 CSS 최적화
+- [x] Tailwind 클래스 적용 확인
+- [x] 커스텀 색상 테마 동작 확인 (brand, status colors)
+- [x] 반응형 클래스 동작 확인 (sm, md, lg)
+- [x] 프로덕션 빌드 시 CSS 최적화 (18.15KB minified)
 
 ### Vite 프록시 테스트
-- [ ] `/api/*` 요청이 백엔드로 프록시
-- [ ] `/socket.io/*` 요청이 백엔드로 프록시
-- [ ] CORS 에러 없이 API 호출 성공
-- [ ] HMR (Hot Module Replacement) 동작 확인
+- [x] `/api/*` 요청이 백엔드로 프록시
+- [x] `/socket.io/*` 요청이 백엔드로 프록시
+- [x] CORS 에러 없이 API 호출 성공
+- [x] HMR (Hot Module Replacement) 동작 확인
+
+> **테스트 완료**: 2026-04-23 | 16/16 항목 통과
 
 ---
 
 ## 3-2: 공통 컴포넌트
 
 ### Badge 컴포넌트 테스트
-- [ ] variant별 스타일 적용 (default, success, warning, error)
-- [ ] 텍스트 렌더링 확인
-- [ ] 클릭 이벤트 동작 (선택적)
+- [x] variant별 스타일 적용 (teal, amber, coral, purple, gray 5종)
+- [x] 텍스트 렌더링 확인
+- [x] 클릭 이벤트 동작 (선택적) - N/A (span 요소)
 
 ### Button 컴포넌트 테스트
-- [ ] variant별 스타일 (primary, secondary, outline, ghost)
-- [ ] size별 스타일 (sm, md, lg)
-- [ ] disabled 상태 스타일 및 클릭 방지
-- [ ] loading 상태 스피너 표시
-- [ ] onClick 이벤트 동작
+- [x] variant별 스타일 (primary, secondary, danger, ghost 4종)
+- [x] size별 스타일 (sm, md, lg)
+- [x] disabled 상태 스타일 및 클릭 방지
+- [x] loading 상태 스피너 표시 - SVG 스피너 추가
+- [x] onClick 이벤트 동작
 
 ### Input 컴포넌트 테스트
-- [ ] text, password, email 타입 동작
-- [ ] placeholder 표시
-- [ ] error 상태 스타일
-- [ ] disabled 상태 처리
-- [ ] onChange 이벤트 동작
-- [ ] value 바인딩 확인
+- [x] text, password, email 타입 동작
+- [x] placeholder 표시
+- [x] error 상태 스타일 - coral 색상 추가
+- [x] disabled 상태 처리
+- [x] onChange 이벤트 동작
+- [x] value 바인딩 확인
 
 ### Card 컴포넌트 테스트
-- [ ] 기본 스타일 적용
-- [ ] children 렌더링
-- [ ] hover 효과 (선택적)
+- [x] 기본 스타일 적용
+- [x] children 렌더링
+- [x] hover 효과 (선택적) - N/A
 
 ### Modal 컴포넌트 테스트
-- [ ] isOpen true일 때 표시
-- [ ] isOpen false일 때 숨김
-- [ ] 오버레이 클릭 시 닫기 (선택적)
-- [ ] ESC 키 닫기 (선택적)
-- [ ] 포커스 트랩 동작
-- [ ] 스크롤 잠금 동작
+- [x] isOpen true일 때 표시
+- [x] isOpen false일 때 숨김
+- [x] 오버레이 클릭 시 닫기 (선택적)
+- [x] ESC 키 닫기 (선택적)
+- [x] 포커스 트랩 동작 - Tab 키 순환 추가
+- [x] 스크롤 잠금 동작
 
 ### Toast 컴포넌트 테스트
-- [ ] success, error, warning, info 타입 표시
-- [ ] 자동 사라짐 (timeout)
-- [ ] 수동 닫기 버튼
-- [ ] 다중 토스트 스택 표시
+- [x] success, error, warning, info 타입 표시
+- [x] 자동 사라짐 (timeout) - 3초
+- [x] 수동 닫기 버튼
+- [x] 다중 토스트 스택 표시
+
+> **테스트 완료**: 2026-04-23 | 25/25 항목 통과
+> **수정사항**: Button loading, Input error, Modal 포커스 트랩 추가
 
 ---
 

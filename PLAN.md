@@ -368,8 +368,8 @@ client/CLAUDE.md를 읽고 Phase 3-1: Vite + React 초기화를 구현해줘
 
 ### 3-2: 공통 컴포넌트
 
-- [ ] `client/src/components/ui.tsx` 확장/검토
-- [ ] Badge, Button, Input, Card, Modal, Toast 확인
+- [x] `client/src/components/ui.tsx` 확장/검토
+- [x] Badge, Button, Input, Card, Modal, Toast 확인
 
 **참조**: `client/CLAUDE.md` → Component Usage, `client/src/components/ui.tsx`
 
@@ -686,12 +686,12 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | 0     | 인프라         | 6/6 ✅ |
 | 1     | 인증 시스템      | 3/3 ✅ |
 | 2     | REST API    | 8/8 ✅ |
-| 3     | React 프론트엔드 | 1/11  |
+| 3     | React 프론트엔드 | 2/11  |
 | 4     | 실시간 기능      | 0/5   |
 | 5     | 고급 기능       | 0/3   |
 | 6     | 테스트 및 마무리   | 0/3   |
 
-**전체**: 18/39 단계 완료
+**전체**: 19/39 단계 완료
 
 ---
 
