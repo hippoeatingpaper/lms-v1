@@ -351,10 +351,10 @@ server/middleware/SPEC_UPLOAD.md를 읽고 Phase 2-8: Files API를 구현해줘
 
 ### 3-1: Vite + React 초기화
 
-- [ ] `client/` 프로젝트 생성
-- [ ] TypeScript 설정
-- [ ] Tailwind CSS 설정
-- [ ] Vite 프록시 설정 (`vite.config.ts`)
+- [x] `client/` 프로젝트 생성
+- [x] TypeScript 설정
+- [x] Tailwind CSS 설정
+- [x] Vite 프록시 설정 (`vite.config.ts`)
 
 **참조**: `client/CLAUDE.md` → Vite Config
 
@@ -686,12 +686,12 @@ Phase 5-3: PWA 설정을 구현해줘. vite-plugin-pwa 사용
 | 0     | 인프라         | 6/6 ✅ |
 | 1     | 인증 시스템      | 3/3 ✅ |
 | 2     | REST API    | 8/8 ✅ |
-| 3     | React 프론트엔드 | 0/11  |
+| 3     | React 프론트엔드 | 1/11  |
 | 4     | 실시간 기능      | 0/5   |
 | 5     | 고급 기능       | 0/3   |
 | 6     | 테스트 및 마무리   | 0/3   |
 
-**전체**: 17/39 단계 완료
+**전체**: 18/39 단계 완료
 
 ---
 

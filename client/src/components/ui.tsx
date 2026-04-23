@@ -55,7 +55,7 @@ import {
 import {
   Bell, Home, FileText, BookOpen, Edit3,
   ChevronUp, ChevronDown, Trash2, Lock,
-  Upload, Camera, X, Check, ChevronRight,
+  Upload, X, Check, ChevronRight,
   AlertCircle, RefreshCw, Calendar, Clock,
 } from 'lucide-react'
 
@@ -385,7 +385,7 @@ export function AvatarGroup({
   const dim = size === 'xs' ? 'w-4 h-4 text-[7px]' : 'w-5 h-5 text-[8px]'
   return (
     <div className="flex items-center">
-      {visible.map((name, i) => (
+      {visible.map((_, i) => (
         <div
           key={i}
           className={`${dim} rounded-full border-[1.5px] border-white flex items-center justify-center font-medium ${i > 0 ? '-ml-1' : ''}`}
