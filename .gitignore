@@ -35,3 +35,7 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Test/Temp files
+cookies*.txt
+nul
