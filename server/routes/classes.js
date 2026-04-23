@@ -81,9 +81,19 @@ router.post('/', authenticate, requireTeacher, (req, res) => {
 /**
  * GET /api/v1/classes/:classId
  * 반 상세 조회
+ * - 교사: 모든 반 조회 가능 (통계 포함)
+ * - 학생: 본인 반만 조회 가능 (기본 정보만)
  */
-router.get('/:classId', authenticate, requireTeacher, (req, res) => {
+router.get('/:classId', authenticate, (req, res) => {
   const { classId } = req.params
+  const user = req.user
+
+  // 학생은 본인 반만 조회 가능
+  if (user.role === 'student' && user.class_id !== parseInt(classId)) {
+    return res.status(403).json({
+      error: { code: 'FORBIDDEN', message: '권한이 없습니다.' }
+    })
+  }
 
   const classRow = db.get(`
     SELECT
@@ -101,18 +111,28 @@ router.get('/:classId', authenticate, requireTeacher, (req, res) => {
     })
   }
 
-  res.json({
-    class: {
-      id: classRow.id,
-      name: classRow.name,
-      created_at: classRow.created_at,
-      stats: {
-        student_count: classRow.student_count,
-        team_count: classRow.team_count,
-        unassigned_count: classRow.unassigned_count,
+  // 교사에게는 통계 포함, 학생에게는 기본 정보만
+  if (user.role === 'teacher') {
+    res.json({
+      class: {
+        id: classRow.id,
+        name: classRow.name,
+        created_at: classRow.created_at,
+        stats: {
+          student_count: classRow.student_count,
+          team_count: classRow.team_count,
+          unassigned_count: classRow.unassigned_count,
+        }
       }
-    }
-  })
+    })
+  } else {
+    res.json({
+      class: {
+        id: classRow.id,
+        name: classRow.name,
+      }
+    })
+  }
 })
 
 /**
