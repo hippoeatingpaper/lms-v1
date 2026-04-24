@@ -10,15 +10,9 @@ import { ClassHome } from './pages/ClassHome'
 import { AdminClasses } from './pages/AdminClasses'
 import { AdminUsers } from './pages/AdminUsers'
 import { AdminTeams } from './pages/AdminTeams'
-
-function Board() {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-medium">게시판</h1>
-      <p className="text-sm text-gray-500">Phase 3-8에서 구현 예정</p>
-    </div>
-  )
-}
+import { Board } from './pages/Board'
+import { PostDetail } from './pages/PostDetail'
+import { PostForm } from './pages/PostForm'
 
 function AssignmentList() {
   return (
@@ -105,6 +99,10 @@ export default function App() {
         <Route path="/admin/classes" element={<AdminClasses />} />
         <Route path="/admin/classes/:classId/teams" element={<AdminTeams />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        {/* 교사 게시판 */}
+        <Route path="/class/:classId/board" element={<Board />} />
+        <Route path="/class/:classId/board/new" element={<PostForm />} />
+        <Route path="/class/:classId/board/:postId/edit" element={<PostForm />} />
       </Route>
 
       {/* 학생 전용 라우트 */}
@@ -121,6 +119,24 @@ export default function App() {
         <Route path="assignments" element={<AssignmentList />} />
         <Route path="profile" element={<StudentProfile />} />
       </Route>
+
+      {/* 학생 게시물 상세 (별도 페이지) */}
+      <Route
+        path="/class/:classId/posts/:postId"
+        element={
+          <AuthGuard requireRole="student">
+            <PostDetail />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/class/:classId/posts/:postId/edit"
+        element={
+          <AuthGuard requireRole="student">
+            <PostForm />
+          </AuthGuard>
+        }
+      />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

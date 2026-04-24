@@ -227,9 +227,16 @@ router.post('/refresh', (req, res) => {
 // ============================================================
 
 router.get('/me', authenticate, (req, res) => {
-  // DB에서 최신 사용자 정보 조회
+  // DB에서 최신 사용자 정보 조회 (반/팀 이름 포함)
   const user = db.get(
-    'SELECT id, name, username, role, class_id, team_id FROM users WHERE id = ?',
+    `SELECT
+      u.id, u.name, u.username, u.role, u.class_id, u.team_id,
+      c.name AS class_name,
+      t.name AS team_name
+    FROM users u
+    LEFT JOIN classes c ON u.class_id = c.id
+    LEFT JOIN teams t ON u.team_id = t.id
+    WHERE u.id = ?`,
     [req.user.id]
   )
 
@@ -246,7 +253,9 @@ router.get('/me', authenticate, (req, res) => {
       username: user.username,
       role: user.role,
       class_id: user.class_id,
+      class_name: user.class_name,
       team_id: user.team_id,
+      team_name: user.team_name,
     },
   })
 })

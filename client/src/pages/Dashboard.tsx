@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, MetricCard } from '../components/ui'
+import { Card, MetricCard, Button } from '../components/ui'
 import { api } from '../lib/api'
-import { ChevronRight } from 'lucide-react'
+import { Users, BookOpen } from 'lucide-react'
 
 interface ClassInfo {
   id: number
@@ -141,8 +141,8 @@ function ClassCard({ classInfo }: { classInfo: ClassInfo }) {
   }
 
   return (
-    <Link to={`/admin/classes/${classInfo.id}`}>
-      <Card className="flex items-center justify-between hover:border-[#AFA9EC] transition-colors">
+    <Card className="hover:border-[#AFA9EC] transition-colors">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-[#EEEDFE] rounded-lg flex items-center justify-center">
             <span className="text-[#534AB7] font-medium text-[14px]">
@@ -154,12 +154,24 @@ function ClassCard({ classInfo }: { classInfo: ClassInfo }) {
               {classInfo.name}
             </p>
             <p className="text-[12px] text-gray-500">
-              학생 {classInfo.stats?.student_count || 0}명
+              학생 {classInfo.stats?.student_count || 0}명 · 팀 {classInfo.stats?.team_count || 0}개
             </p>
           </div>
         </div>
-        <ChevronRight size={18} className="text-gray-400" />
-      </Card>
-    </Link>
+      </div>
+      {/* 바로가기 버튼 */}
+      <div className="flex gap-2 mt-3 pt-3 border-t border-black/5">
+        <Link to={`/class/${classInfo.id}/board`} className="flex-1">
+          <Button variant="secondary" size="sm" className="w-full">
+            <BookOpen size={14} /> 게시판
+          </Button>
+        </Link>
+        <Link to={`/admin/classes/${classInfo.id}/teams`} className="flex-1">
+          <Button variant="secondary" size="sm" className="w-full">
+            <Users size={14} /> 팀 관리
+          </Button>
+        </Link>
+      </div>
+    </Card>
   )
 }

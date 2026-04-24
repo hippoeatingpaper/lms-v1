@@ -88,10 +88,16 @@ export function StudentProfile() {
             <span className="text-gray-500">역할</span>
             <span>학생</span>
           </div>
+          {user?.class_name && (
+            <div className="flex justify-between py-2 border-b border-black/5">
+              <span className="text-gray-500">반</span>
+              <span>{user.class_name}</span>
+            </div>
+          )}
           {user?.team_id && (
             <div className="flex justify-between py-2 border-b border-black/5">
               <span className="text-gray-500">팀</span>
-              <span>팀 {user.team_id}</span>
+              <span>{user.team_name || `팀 ${user.team_id}`}</span>
             </div>
           )}
         </div>

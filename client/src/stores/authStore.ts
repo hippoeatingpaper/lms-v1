@@ -6,7 +6,9 @@ export interface User {
   username: string
   role: 'teacher' | 'student'
   class_id: number | null
+  class_name: string | null
   team_id: number | null
+  team_name: string | null
 }
 
 interface AuthState {
