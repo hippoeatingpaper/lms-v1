@@ -2,6 +2,46 @@
 
 > 과제 목록, 출제, 제출 화면의 프론트엔드 구현 스펙
 
+## 라우팅 구조
+
+과제 관련 페이지는 **교사와 학생이 동일한 경로를 공유**합니다. `RoleBasedLayout`을 사용하여 역할에 따라 적절한 레이아웃(TeacherLayout/StudentLayout)이 적용됩니다.
+
+### 라우트 정의 (App.tsx)
+
+```tsx
+{/* 공통 과제 라우트 (교사/학생 모두 접근 가능) */}
+<Route
+  path="/class/:classId/assignments"
+  element={
+    <AuthGuard>
+      <RoleBasedLayout />
+    </AuthGuard>
+  }
+>
+  <Route index element={<AssignmentList />} />
+  <Route path=":assignmentId" element={<AssignmentDetail />} />
+</Route>
+
+{/* 교사 전용 라우트 */}
+<Route path="/class/:classId/assignments/new" element={<AssignmentForm />} />
+<Route path="/class/:classId/assignments/:assignmentId/edit" element={<AssignmentForm />} />
+<Route path="/class/:classId/assignments/:assignmentId/submissions" element={<SubmissionList />} />
+<Route path="/class/:classId/assignments/:assignmentId/submissions/:submissionId" element={<SubmissionDetail />} />
+```
+
+### 경로 매핑
+
+| 경로 | 교사 | 학생 | 레이아웃 |
+|------|------|------|----------|
+| `/class/:classId/assignments` | 과제 목록 | 과제 목록 | RoleBasedLayout |
+| `/class/:classId/assignments/:id` | 과제 상세 | 과제 제출 | RoleBasedLayout |
+| `/class/:classId/assignments/new` | 과제 출제 | - | TeacherLayout |
+| `/class/:classId/assignments/:id/edit` | 과제 수정 | - | TeacherLayout |
+| `/class/:classId/assignments/:id/submissions` | 제출 현황 | - | TeacherLayout |
+| `/class/:classId/assignments/:id/submissions/:subId` | 피드백 작성 | - | TeacherLayout |
+
+> **주의**: 과제 목록/상세는 공통 라우트이므로 학생 라우트보다 **먼저 정의되면 안 됩니다**. 학생 전용 라우트(`/class/:classId`)가 먼저 정의되어 있어야 학생 홈/게시판/프로필이 정상 작동합니다.
+
 ## 페이지 구조
 
 ### 1. 과제 목록 (AssignmentList.tsx)
@@ -134,6 +174,79 @@
 │ └─────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────┘
 ```
+
+### 4. 제출 현황 (SubmissionList.tsx) - 교사 전용
+```
+경로: /class/:classId/assignments/:assignmentId/submissions
+권한: 교사만
+```
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← 1차 보고서                                            │
+│   팀 과제 제출 현황                                      │
+├─────────────────────────────────────────────────────────┤
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
+│ │ 전체     │ │ 제출완료 │ │ 임시저장 │ │ 미제출   │    │
+│ │    30    │ │    23    │ │     4    │ │     3    │    │
+│ └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
+├─────────────────────────────────────────────────────────┤
+│ [전체(27)] [제출완료(23)] [임시저장(4)] [미제출(3)]     │
+├─────────────────────────────────────────────────────────┤
+│ 팀       │ 제출자   │ 상태     │ 제출일     │ 피드백  │ │
+│──────────┼──────────┼──────────┼────────────┼─────────│ │
+│ 1모둠    │ 김민준   │ 제출완료 │ 4/18 14:32 │ 작성됨  │ │
+│ 2모둠    │ 이서연   │ 제출완료 │ 4/19 09:15 │ -       │ │
+│ 3모둠    │ 박지호   │ 임시저장 │ -          │ -       │ │
+└─────────────────────────────────────────────────────────┘
+```
+
+**구현 파일**: `client/src/pages/SubmissionList.tsx`
+
+### 5. 제출물 상세/피드백 (SubmissionDetail.tsx) - 교사 전용
+```
+경로: /class/:classId/assignments/:assignmentId/submissions/:submissionId
+권한: 교사만
+```
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ← 1차 보고서                    [제출완료] [공개됨]     │
+│   1모둠 - 김민준 | 2026-04-18 14:32                     │
+├─────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 👥 1모둠                                            │ │
+│ │ 팀원: 김민준, 이서연, 박지호             [아바타들] │ │
+│ └─────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────┤
+│ 답변 내용                                               │
+│                                                         │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ ① 환경 문제의 원인을 서술하시오. *                  │ │
+│ │   서술형                                            │ │
+│ │ ┌─────────────────────────────────────────────────┐ │ │
+│ │ │ 환경 문제의 주요 원인으로는 산업화, 도시화...    │ │ │
+│ │ └─────────────────────────────────────────────────┘ │ │
+│ │                         최종 수정: 2026-04-18 14:30 │ │
+│ └─────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────┤
+│ 💬 피드백                                    [저장됨]   │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ 학생에게 전달할 피드백을 작성하세요...              │ │
+│ │                                                     │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                    [✓ 피드백 저장] 버튼 │
+├─────────────────────────────────────────────────────────┤
+│                                    [게시판 공개] 버튼   │
+└─────────────────────────────────────────────────────────┘
+```
+
+**구현 파일**: `client/src/pages/SubmissionDetail.tsx`
+
+**기능**:
+- 질문별 답변 확인
+- 피드백 작성/수정/저장
+- 제출물 게시판 공개 (우수작 공유)
 
 ## 컴포넌트 사용법
 
@@ -343,6 +456,67 @@ const allRequiredFilled = useMemo(() => {
 }, [questions, answers, files])
 ```
 
+### 타입 정의 (types/assignment.ts)
+
+```ts
+// 제출 현황 응답 (교사용)
+interface SubmissionsResponse {
+  submissions: {
+    id: number
+    submitter: { id: number; name: string }
+    team: { id: number; name: string } | null
+    status: 'draft' | 'submitted'
+    version: number
+    submitted_at: string | null
+    has_feedback: boolean
+    is_published: boolean
+    last_modified_by: { id: number; name: string } | null
+  }[]
+  stats: {
+    total: number
+    submitted: number
+    draft: number
+    not_started: number
+  }
+}
+
+// 제출물 상세 응답 (교사용)
+interface SubmissionDetailResponse {
+  submission: {
+    id: number
+    status: 'draft' | 'submitted'
+    version: number
+    feedback: string | null
+    is_published: boolean
+    submitted_at: string | null
+    submitter: { id: number; name: string }
+    team: {
+      id: number
+      name: string
+      members: { id: number; name: string }[]
+    } | null
+  }
+  assignment: {
+    id: number
+    title: string
+    description: string
+    scope: 'individual' | 'team'
+  }
+  questions: {
+    id: number
+    order_num: number
+    question_type: 'essay' | 'short' | 'multiple_choice' | 'file'
+    body: string
+    options: string[] | null
+    required: boolean
+    answer: {
+      text: string | null
+      updated_at: string | null
+    }
+  }[]
+}
+```
+
 ## API 호출
 
 ```ts
@@ -367,6 +541,22 @@ await api(`/assignments/${id}/submit`, {
   method: 'POST',
   body: JSON.stringify({ answers: ... })
 })
+
+// 제출 현황 조회 (교사)
+const { submissions, stats } = await api<SubmissionsResponse>(
+  `/assignments/${id}/submissions`
+)
+
+// 제출물 상세 조회 (교사)
+const { submission, assignment, questions } = await api<SubmissionDetailResponse>(
+  `/submissions/${submissionId}`
+)
+
+// 피드백 저장 (교사)
+await apiPatch(`/submissions/${submissionId}/feedback`, { feedback: '...' })
+
+// 제출물 공개 (교사)
+await apiPost(`/submissions/${submissionId}/publish`)
 ```
 
 ## 질문 타입별 렌더링

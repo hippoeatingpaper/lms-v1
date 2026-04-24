@@ -6,7 +6,7 @@ import { db } from '../db.js'
 import { authenticate, requireTeacher } from '../middleware/auth.js'
 
 const router = Router()
-const MAX_CLASSES = 6
+const MAX_CLASSES = 11
 
 /**
  * GET /api/v1/classes
@@ -55,7 +55,7 @@ router.post('/', authenticate, requireTeacher, (req, res) => {
   const count = db.get('SELECT COUNT(*) as cnt FROM classes')
   if (count.cnt >= MAX_CLASSES) {
     return res.status(400).json({
-      error: { code: 'MAX_CLASSES_EXCEEDED', message: '최대 6개의 반만 생성할 수 있습니다.' }
+      error: { code: 'MAX_CLASSES_EXCEEDED', message: `최대 ${MAX_CLASSES}개의 반만 생성할 수 있습니다.` }
     })
   }
 

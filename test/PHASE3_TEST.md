@@ -363,31 +363,40 @@
 ## 3-11: 파일 업로드 훅
 
 ### useFileUpload 기본 테스트
-- [ ] 파일 선택 시 업로드 시작
-- [ ] 업로드 진행률 표시 (0-100%)
-- [ ] 업로드 성공 시 파일 정보 반환
-- [ ] 업로드 실패 시 에러 처리
+- [x] 파일 선택 시 업로드 시작 - useFileUpload.ts:52-133 upload(), PostForm.tsx:121-166 handleFileSelect()
+- [x] 업로드 진행률 표시 (0-100%) - useFileUpload.ts:74-78 xhr.upload.onprogress, PostForm.tsx:138-142
+- [x] 업로드 성공 시 파일 정보 반환 - useFileUpload.ts:85-91 JSON.parse(xhr.responseText), API 테스트 성공
+- [x] 업로드 실패 시 에러 처리 - useFileUpload.ts:92-109 에러 코드별 메시지 처리
 
 ### 진행률 표시 테스트
-- [ ] 프로그레스 바 표시
-- [ ] 퍼센트 숫자 표시
-- [ ] 업로드 중 상태 표시
+- [x] 프로그레스 바 표시 - ui.tsx:438-453 ProgressBar 컴포넌트, PostForm.tsx:324
+- [x] 퍼센트 숫자 표시 - PostForm.tsx:326 "업로드 중... {uploadProgress}%", FileUploader.tsx:162-163
+- [x] 업로드 중 상태 표시 - PostForm.tsx:322 uploading 상태, FileUploader.tsx:145-170
 
 ### 업로드 취소 테스트
-- [ ] 취소 버튼 표시
-- [ ] 취소 클릭 시 업로드 중단
-- [ ] 취소 후 상태 초기화
+- [x] 취소 버튼 표시 - FileUploader.tsx:165-168 취소 버튼 + X 아이콘
+- [x] 취소 클릭 시 업로드 중단 - useFileUpload.ts:135-139 cancel() → xhr.abort()
+- [x] 취소 후 상태 초기화 - useFileUpload.ts:122-126 onabort 핸들러, FileUploader.tsx:85-90
 
 ### 다중 파일 업로드 테스트
-- [ ] 여러 파일 선택 가능
-- [ ] 개별 파일 진행률 표시
-- [ ] 개별 파일 취소 가능
-- [ ] 전체 완료 시 콜백
+- [x] 여러 파일 선택 가능 - PostForm.tsx:158 연속 파일 추가 (files 배열에 append)
+- [ ] 개별 파일 진행률 표시 - 순차 업로드만 지원 (단일 ProgressBar)
+- [ ] 개별 파일 취소 가능 - 미구현 (현재 전체 취소만)
+- [ ] 전체 완료 시 콜백 - 개별 업로드 후 목록에 추가 (일괄 완료 콜백 없음)
 
 ### 파일 검증 테스트
-- [ ] 파일 크기 초과 시 에러 표시 (20MB)
-- [ ] 동영상 크기 초과 시 에러 표시 (100MB)
-- [ ] 허용되지 않은 파일 타입 에러 표시
+- [x] 파일 크기 초과 시 에러 표시 (20MB) - useFileValidation.ts:70-74, PostForm.tsx:122-127
+- [x] 동영상 크기 초과 시 에러 표시 (100MB) - useFileValidation.ts:66-67, PostForm.tsx:123 "video/mp4"
+- [x] 허용되지 않은 파일 타입 에러 표시 - useFileValidation.ts:58-63, API 테스트 INVALID_FILE_TYPE 응답 확인
+
+### API 테스트 결과
+- [x] POST /api/v1/files (context=general) - 파일 업로드 성공 (id, filename, original_name, url 반환)
+- [x] 파일 크기 초과 응답 - 413 에러 코드
+- [x] 잘못된 파일 형식 응답 - INVALID_FILE_TYPE 에러 반환 확인
+
+> **테스트 완료**: 2026-04-24 | 14/17 항목 통과 (다중 파일 개별 진행률/취소/일괄 콜백 미구현)
+> **구현 파일**: `hooks/useFileUpload.ts`, `hooks/useFileValidation.ts`, `components/FileUploader.tsx`, `pages/PostForm.tsx`
+> **참고**: PostForm.tsx는 useFileUpload 훅 대신 직접 XHR 구현 사용 (동일 패턴)
 
 ---
 
