@@ -115,6 +115,9 @@ app.use(cors({
     // 같은 origin 요청 또는 허용된 origin
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
+    } else if (NODE_ENV === 'development') {
+      // 개발 환경에서는 같은 네트워크의 모든 origin 허용
+      callback(null, true)
     } else {
       callback(new Error('CORS not allowed'))
     }

@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // 외부 기기 접속 허용 (0.0.0.0)
     port: 5173,
     proxy: {
       '/api': {
