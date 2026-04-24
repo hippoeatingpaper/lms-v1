@@ -22,12 +22,14 @@ router.post('/',
   upload.single('file'),
   validateFileType,
   (req, res) => {
-    const { context, post_id, submission_id, question_id } = req.body
+    const { post_id, submission_id, question_id } = req.body
+    // context 기본값: post_id가 있으면 'post', submission_id가 있으면 'submission', 그 외 'general'
+    const context = req.body.context || (post_id ? 'post' : submission_id ? 'submission' : 'general')
     const file = req.file
     const user = req.user
 
     // context 검증
-    if (!context || !['post', 'submission', 'general'].includes(context)) {
+    if (!['post', 'submission', 'general'].includes(context)) {
       // 파일 삭제
       fsPromises.unlink(file.path).catch(() => {})
       return res.status(400).json({

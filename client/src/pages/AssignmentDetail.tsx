@@ -16,11 +16,21 @@ import {
   ErrorState,
   useToast,
 } from '../components/ui'
+import { useFileUpload } from '../hooks/useFileUpload'
+import { validateFile, formatFileSize } from '../hooks/useFileValidation'
 import type {
   AssignmentDetailResponse,
   Answer,
   SubmitResponse,
 } from '../types/assignment'
+
+// 업로드된 파일 정보 타입
+interface UploadedFileInfo {
+  id: number
+  name: string
+  size: string
+  uploadedAt?: string
+}
 
 export function AssignmentDetail() {
   const { classId, assignmentId } = useParams<{
@@ -44,6 +54,11 @@ export function AssignmentDetail() {
 
   // 팀원 정보 (팀 과제인 경우)
   const [teamMembers, setTeamMembers] = useState<string[]>([])
+
+  // 파일 업로드 상태 (questionId별)
+  const [uploadedFiles, setUploadedFiles] = useState<Record<number, UploadedFileInfo>>({})
+  const [uploadingQuestionId, setUploadingQuestionId] = useState<number | null>(null)
+  const { upload, progress: uploadProgress } = useFileUpload()
 
   // 데이터 로드
   useEffect(() => {
@@ -124,6 +139,90 @@ export function AssignmentDetail() {
     [data?.questions]
   )
 
+  // 파일 업로드 핸들러
+  const handleFileSelect = useCallback(
+    async (questionId: number, file: File) => {
+      // 사전 검증
+      const validation = validateFile(file)
+      if (!validation.valid) {
+        toast.error(validation.error!)
+        return
+      }
+
+      // submission이 없으면 먼저 draft 생성
+      let submissionId = data?.submission?.id
+      if (!submissionId) {
+        try {
+          const draftResult = await apiPost<{ submission: { id: number } }>(
+            `/assignments/${assignmentId}/draft`,
+            { answers: [] }
+          )
+          submissionId = draftResult.submission.id
+          // 데이터 새로고침
+          const result = await api<AssignmentDetailResponse>(
+            `/assignments/${assignmentId}`
+          )
+          setData(result)
+        } catch (err) {
+          toast.error('제출물 생성에 실패했습니다.')
+          return
+        }
+      }
+
+      setUploadingQuestionId(questionId)
+
+      try {
+        const result = await upload(
+          file,
+          `/api/v1/submissions/${submissionId}/files`,
+          { question_id: String(questionId) }
+        )
+
+        // 업로드 성공 시 상태 업데이트
+        setUploadedFiles((prev) => ({
+          ...prev,
+          [questionId]: {
+            id: result.file.id,
+            name: result.file.original_name,
+            size: formatFileSize(result.file.size),
+          },
+        }))
+
+        // 답변에 파일 ID 저장
+        setAnswers((prev) => ({
+          ...prev,
+          [questionId]: `file:${result.file.id}`,
+        }))
+        setIsDirty(true)
+
+        toast.success('파일이 업로드되었습니다.')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : '파일 업로드에 실패했습니다.')
+      } finally {
+        setUploadingQuestionId(null)
+      }
+    },
+    [data, assignmentId, upload, toast]
+  )
+
+  // 파일 교체 핸들러
+  const handleFileReplace = useCallback(
+    (questionId: number) => {
+      setUploadedFiles((prev) => {
+        const next = { ...prev }
+        delete next[questionId]
+        return next
+      })
+      setAnswers((prev) => {
+        const next = { ...prev }
+        delete next[questionId]
+        return next
+      })
+      setIsDirty(true)
+    },
+    []
+  )
+
   // 임시저장
   const handleSaveDraft = async (silent = false) => {
     if (!data || isTeacher) return
@@ -196,14 +295,14 @@ export function AssignmentDetail() {
     const completed = requiredQuestions.filter((q) => {
       const answer = answers[q.id]
       if (q.question_type === 'file') {
-        // 파일은 별도 처리 필요
-        return false
+        // 파일 타입은 uploadedFiles 확인
+        return !!uploadedFiles[q.id]
       }
       return answer?.trim().length > 0
     }).length
 
     return { completed, total: requiredQuestions.length }
-  }, [data, answers])
+  }, [data, answers, uploadedFiles])
 
   const canSubmit = requiredProgress.completed === requiredProgress.total
 
@@ -316,8 +415,11 @@ export function AssignmentDetail() {
             allowCamera={true}
             answerText={answers[question.id] || ''}
             answerOptions={parseAnswerOptions(answers[question.id])}
+            selectedFile={uploadedFiles[question.id]}
             onTextChange={(v) => handleAnswerChange(question.id, v)}
             onOptionsChange={(v) => handleOptionsChange(question.id, v)}
+            onFileSelect={(file) => handleFileSelect(question.id, file)}
+            onFileReplace={() => handleFileReplace(question.id)}
           />
         ))}
 
