@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, MetricCard, Button } from '../components/ui'
 import { api } from '../lib/api'
-import { Users, BookOpen } from 'lucide-react'
+import { Users, BookOpen, FileText } from 'lucide-react'
 
 interface ClassInfo {
   id: number
@@ -161,6 +161,11 @@ function ClassCard({ classInfo }: { classInfo: ClassInfo }) {
       </div>
       {/* 바로가기 버튼 */}
       <div className="flex gap-2 mt-3 pt-3 border-t border-black/5">
+        <Link to={`/class/${classInfo.id}/assignments`} className="flex-1">
+          <Button variant="secondary" size="sm" className="w-full">
+            <FileText size={14} /> 과제
+          </Button>
+        </Link>
         <Link to={`/class/${classInfo.id}/board`} className="flex-1">
           <Button variant="secondary" size="sm" className="w-full">
             <BookOpen size={14} /> 게시판

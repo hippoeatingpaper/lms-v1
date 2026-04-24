@@ -13,15 +13,9 @@ import { AdminTeams } from './pages/AdminTeams'
 import { Board } from './pages/Board'
 import { PostDetail } from './pages/PostDetail'
 import { PostForm } from './pages/PostForm'
-
-function AssignmentList() {
-  return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-medium">과제 목록</h1>
-      <p className="text-sm text-gray-500">Phase 3-9에서 구현 예정</p>
-    </div>
-  )
-}
+import { AssignmentList } from './pages/AssignmentList'
+import { AssignmentDetail } from './pages/AssignmentDetail'
+import { AssignmentForm } from './pages/AssignmentForm'
 
 function NotFound() {
   return (
@@ -103,6 +97,11 @@ export default function App() {
         <Route path="/class/:classId/board" element={<Board />} />
         <Route path="/class/:classId/board/new" element={<PostForm />} />
         <Route path="/class/:classId/board/:postId/edit" element={<PostForm />} />
+        {/* 교사 과제 */}
+        <Route path="/class/:classId/assignments" element={<AssignmentList />} />
+        <Route path="/class/:classId/assignments/new" element={<AssignmentForm />} />
+        <Route path="/class/:classId/assignments/:assignmentId" element={<AssignmentDetail />} />
+        <Route path="/class/:classId/assignments/:assignmentId/edit" element={<AssignmentForm />} />
       </Route>
 
       {/* 학생 전용 라우트 */}
@@ -119,6 +118,16 @@ export default function App() {
         <Route path="assignments" element={<AssignmentList />} />
         <Route path="profile" element={<StudentProfile />} />
       </Route>
+
+      {/* 학생 과제 상세 (별도 페이지) */}
+      <Route
+        path="/class/:classId/assignments/:assignmentId"
+        element={
+          <AuthGuard requireRole="student">
+            <AssignmentDetail />
+          </AuthGuard>
+        }
+      />
 
       {/* 학생 게시물 상세 (별도 페이지) */}
       <Route

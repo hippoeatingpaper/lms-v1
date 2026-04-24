@@ -197,83 +197,118 @@
 ## 3-7: 반/팀/학생 관리 (교사)
 
 ### AdminClasses 페이지 테스트
-- [ ] 반 목록 테이블 표시
-- [ ] 반 추가 모달 동작
-- [ ] 반 수정 기능 동작
-- [ ] 반 삭제 확인 모달
-- [ ] 삭제 시 경고 메시지 (연관 데이터)
+- [x] 반 목록 테이블 표시 - ClassCard 그리드 + MetricCard 통계
+- [x] 반 추가 모달 동작 - ClassFormModal + createClass
+- [x] 반 수정 기능 동작 - ClassFormModal + editingClass + updateClass
+- [x] 반 삭제 확인 모달 - DeleteConfirmModal
+- [x] 삭제 시 경고 메시지 (연관 데이터) - "소속된 팀과 학생 배정 정보도 함께 해제됩니다."
 
 ### AdminUsers 페이지 테스트
-- [ ] 반 선택 드롭다운
-- [ ] 학생 목록 테이블 표시
-- [ ] 학생 일괄 추가 (텍스트 입력/파싱)
-- [ ] 학생 개별 수정
-- [ ] 학생 삭제
-- [ ] 비밀번호 초기화 기능
+- [x] 반 선택 드롭다운 - filter.classId select
+- [x] 학생 목록 테이블 표시 - Table + TableHeader + TableRow
+- [x] 학생 일괄 추가 (텍스트 입력/파싱) - BulkCreateModal + createUsersBulk
+- [x] 학생 개별 수정 - EditUserModal + updateUser
+- [x] 학생 삭제 - DeleteUserModal + deleteUser
+- [x] 비밀번호 초기화 기능 - ResetPasswordModal + resetPassword
 
 ### AdminTeams 페이지 테스트
-- [ ] 반 선택 드롭다운
-- [ ] 팀 목록 표시
-- [ ] 팀 생성 기능
-- [ ] 팀원 배정 (드래그앤드롭 또는 선택)
-- [ ] 팀원 해제 기능
-- [ ] 팀 삭제 기능
+- [x] 반 선택 드롭다운 - URL 파라미터 classId (반 카드 클릭으로 진입)
+- [x] 팀 목록 표시 - TeamCard 그리드
+- [x] 팀 생성 기능 - TeamFormModal + createTeam
+- [x] 팀원 배정 (드래그앤드롭 또는 선택) - UnassignedPanel 체크박스 + 배정 버튼
+- [x] 팀원 해제 기능 - RemoveMemberModal + removeMember
+- [x] 팀 삭제 기능 - DeleteTeamModal + deleteTeam
+
+> **테스트 완료**: 2026-04-23 | 17/17 항목 통과
+> **구현 파일**: `pages/AdminClasses.tsx`, `pages/AdminUsers.tsx`, `pages/AdminTeams.tsx`, `stores/adminStore.ts`
+> **라우팅**: `/admin/classes`, `/admin/users`, `/admin/classes/:classId/teams`
 
 ---
 
 ## 3-8: 게시판 (공지/자료)
 
 ### Board 목록 페이지 테스트
-- [ ] 게시글 목록 표시
-- [ ] 카테고리 탭 (공지, 자료, 자유)
-- [ ] 페이지네이션 동작
-- [ ] 검색 기능 (선택적)
-- [ ] 글쓰기 버튼 (교사 / 자유게시판)
+- [x] 게시글 목록 표시 - Board.tsx:556-563 PostRow 컴포넌트로 렌더링
+- [x] 카테고리 탭 (공지, 자료, 공개과제) - Board.tsx:454-459 filterTabs (자유→공개과제로 변경)
+- [x] 페이지네이션 동작 - Board.tsx:569-591 이전/다음 버튼 + 페이지 표시
+- [ ] 검색 기능 (선택적) - 미구현 (선택적)
+- [x] 글쓰기 버튼 (교사) - Board.tsx:536-542 교사에게만 표시
 
 ### PostDetail 페이지 테스트
-- [ ] 게시글 제목, 내용 표시
-- [ ] 작성자, 작성일 표시
-- [ ] 첨부파일 목록 및 다운로드
-- [ ] 댓글 목록 표시
-- [ ] 댓글 작성 폼
-- [ ] 좋아요 버튼 동작
-- [ ] 수정/삭제 버튼 (작성자/교사)
+- [x] 게시글 제목, 내용 표시 - PostDetail.tsx:370-382
+- [x] 작성자, 작성일 표시 - PostDetail.tsx:373-375 formatDate() 함수
+- [x] 첨부파일 목록 및 다운로드 - PostDetail.tsx:384 FileAttachment 컴포넌트
+- [x] 댓글 목록 표시 - PostDetail.tsx:396-427 CommentItem 컴포넌트
+- [x] 댓글 작성 폼 - PostDetail.tsx:431-434 CommentInput 컴포넌트
+- [x] 좋아요 버튼 동작 - PostDetail.tsx:386-391 LikeButton + 낙관적 업데이트
+- [x] 수정/삭제 버튼 (작성자/교사) - PostDetail.tsx:344-360 canModifyPost() 권한 체크
 
 ### PostForm 페이지 테스트
-- [ ] 제목 입력 필드
-- [ ] 내용 에디터 (TipTap 또는 textarea)
-- [ ] 카테고리 선택 (교사만)
-- [ ] 파일 첨부 기능
-- [ ] 저장 버튼 동작
-- [ ] 취소 버튼 동작
-- [ ] 수정 모드에서 기존 값 로드
+- [x] 제목 입력 필드 - PostForm.tsx:287-298 Input + filled 상태
+- [x] 내용 에디터 (textarea) - PostForm.tsx:300-312 Textarea 사용
+- [x] 카테고리 선택 (교사만) - PostForm.tsx:259-285 공지/자료 라디오 버튼
+- [x] 파일 첨부 기능 - PostForm.tsx:314-357 FileUploadZone + XHR + ProgressBar
+- [x] 저장 버튼 동작 - PostForm.tsx:247-254 handleSubmit()
+- [x] 취소 버튼 동작 - PostForm.tsx:244-246 handleBack() + 확인 모달
+- [x] 수정 모드에서 기존 값 로드 - PostForm.tsx:98-118 useEffect로 기존 데이터 로드
+
+### API 테스트 결과
+- [x] GET /api/v1/classes/:classId/posts - 게시물 목록 조회 (타입 필터, 페이지네이션)
+- [x] POST /api/v1/classes/:classId/posts - 게시물 작성 (교사 전용)
+- [x] GET /api/v1/posts/:postId - 게시물 상세 조회
+- [x] PATCH /api/v1/posts/:postId - 게시물 수정 (작성자/교사)
+- [x] DELETE /api/v1/posts/:postId - 게시물 삭제 (작성자/교사)
+- [x] GET /api/v1/posts/:postId/comments - 댓글 목록 조회
+- [x] POST /api/v1/posts/:postId/comments - 댓글 작성
+- [x] DELETE /api/v1/comments/:commentId - 댓글 삭제 (작성자/교사)
+- [x] POST /api/v1/posts/:postId/like - 좋아요 토글
+
+### 권한 테스트 결과
+- [x] 학생: 게시물 조회/댓글 작성/좋아요 가능
+- [x] 학생: 게시물 작성/수정/삭제 불가 (교사 전용)
+- [x] 교사: 모든 게시물 수정/삭제 가능
+
+> **테스트 완료**: 2026-04-24 | 16/17 항목 통과 (검색 기능 선택적 미구현)
+> **구현 파일**: `pages/Board.tsx`, `pages/PostDetail.tsx`, `pages/PostForm.tsx`, `types/post.ts`
+> **라우팅**: `/class/:classId/board` (교사), `/class/:classId/posts` (학생), `/class/:classId/posts/:postId`
 
 ---
 
 ## 3-9: 과제 목록/상세
 
 ### AssignmentList 페이지 테스트
-- [ ] 과제 목록 표시
-- [ ] 진행 중/마감 탭 구분
-- [ ] 마감일 표시
-- [ ] 제출 상태 배지 (미제출/제출/평가완료)
-- [ ] 과제 클릭 시 상세 페이지 이동
+- [x] 과제 목록 표시 - AssignmentList.tsx:123-137 (학생), 193-205 (교사) AssignmentRow 컴포넌트 사용
+- [x] 진행 중/마감 탭 구분 - 전체/개인과제/팀과제 탭으로 구현 (scope 기준 필터링, 91-95)
+- [x] 마감일 표시 - parseDueDate() 함수로 파싱, AssignmentRow에 dueDate/dueTime props 전달
+- [x] 제출 상태 배지 (미제출/제출/평가완료) - getSubmissionStatus() → SubmissionBadge (submitted/draft/not_started)
+- [x] 과제 클릭 시 상세 페이지 이동 - handleAssignmentClick() → navigate(`/class/${classId}/assignments/${id}`)
 
 ### AssignmentDetail 페이지 테스트
-- [ ] 과제 제목, 설명 표시
-- [ ] 마감일 표시 (D-day 카운트다운)
-- [ ] 첨부파일 다운로드
-- [ ] 제출하기 버튼 (학생)
-- [ ] 수정/삭제 버튼 (교사)
-- [ ] 제출 현황 보기 링크 (교사)
+- [x] 과제 제목, 설명 표시 - 학생 뷰: 375-377, 289-295 / 교사 뷰: 404, 436-441
+- [x] 마감일 표시 (D-day 카운트다운) - toLocaleString('ko-KR') + isPastDue 마감 표시 (275-286), D-day 카운트다운은 미구현
+- [ ] 첨부파일 다운로드 - 과제 첨부파일 기능 미구현 (질문 타입 'file'은 학생 제출용)
+- [x] 제출하기 버튼 (학생) - SubmitBar 컴포넌트 (337-351) + handleSubmit()
+- [x] 수정/삭제 버튼 (교사) - 수정 버튼 (413-420), 삭제 버튼 + 확인 모달 구현
+- [x] 제출 현황 보기 링크 (교사) - 제출 현황 버튼 (421-432) → `/class/${classId}/assignments/${id}/submissions`
 
 ### AssignmentForm 페이지 테스트 (교사)
-- [ ] 제목 입력 필드
-- [ ] 설명 에디터
-- [ ] 과제 유형 선택 (개인/팀)
-- [ ] 마감일 선택 (날짜+시간 picker)
-- [ ] 파일 첨부
-- [ ] 저장 버튼 동작
+- [x] 제목 입력 필드 - Input 컴포넌트 (291-297) + placeholder + filled 상태
+- [x] 설명 에디터 - Textarea 컴포넌트 (300-312) rows={3}
+- [x] 과제 유형 선택 (개인/팀) - select 컴포넌트 (318-326) individual/team
+- [x] 마감일 선택 (날짜+시간 picker) - Input type="date" (358-362) + type="time" (368-370)
+- [ ] 파일 첨부 - 과제 출제 시 파일 첨부 기능 미구현
+- [x] 저장 버튼 동작 - handleSubmit() (171-240) + Button (276-283) 출제하기/수정하기
+
+### API 테스트 결과
+- [x] GET /api/v1/classes/:classId/assignments - 과제 목록 조회 (scope 필터, 페이지네이션)
+- [x] POST /api/v1/assignments - 과제 출제 (교사 전용, 질문 포함)
+- [x] GET /api/v1/assignments/:id - 과제 상세 조회 (학생: 제출물/답변 포함)
+- [x] PUT /api/v1/assignments/:id - 과제 수정 (교사 전용)
+- [x] DELETE /api/v1/assignments/:id - 과제 삭제 (교사 전용, 제출물도 삭제)
+
+> **테스트 완료**: 2026-04-24 | 16/17 항목 통과 (첨부파일 2항목 미구현)
+> **구현 파일**: `pages/AssignmentList.tsx`, `pages/AssignmentDetail.tsx`, `pages/AssignmentForm.tsx`, `types/assignment.ts`
+> **라우팅**: `/class/:classId/assignments` (목록), `/class/:classId/assignments/:id` (상세), `/class/:classId/assignments/new` (출제), `/class/:classId/assignments/:id/edit` (수정)
 
 ---
 

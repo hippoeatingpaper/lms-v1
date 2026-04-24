@@ -52,6 +52,7 @@ import {
   createContext,
   useContext,
   useCallback,
+  useMemo,
 } from 'react'
 import {
   Bell, Home, FileText, BookOpen, Edit3,
@@ -1444,12 +1445,16 @@ export function useToast() {
     throw new Error('useToast must be used within ToastProvider')
   }
 
-  return {
-    success: (message: string) => context.addToast('success', message),
-    error: (message: string) => context.addToast('error', message),
-    warning: (message: string) => context.addToast('warning', message),
-    info: (message: string) => context.addToast('info', message),
-  }
+  // addToast만 의존하여 toasts 변경 시 재실행 방지
+  // addToast는 useCallback으로 안정적이므로 useMemo도 안정적
+  const { addToast } = context
+
+  return useMemo(() => ({
+    success: (message: string) => addToast('success', message),
+    error: (message: string) => addToast('error', message),
+    warning: (message: string) => addToast('warning', message),
+    info: (message: string) => addToast('info', message),
+  }), [addToast])
 }
 
 /**

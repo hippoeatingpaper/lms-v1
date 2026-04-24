@@ -99,11 +99,15 @@ app.use(blockSensitivePaths)
 app.use('/api/v1', globalLimiter)
 
 // 3. CORS 설정
+const VITE_DEV_PORT = 5173
 const allowedOrigins = [
   `http://localhost:${PORT}`,
   `https://localhost:${PORT}`,
   `http://${SERVER_IP}:${PORT}`,
   `https://${SERVER_IP}:${PORT}`,
+  // Vite 개발 서버 (개발 환경)
+  `http://localhost:${VITE_DEV_PORT}`,
+  `http://127.0.0.1:${VITE_DEV_PORT}`,
 ]
 
 app.use(cors({
