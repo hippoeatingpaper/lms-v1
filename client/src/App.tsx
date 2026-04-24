@@ -16,6 +16,8 @@ import { PostForm } from './pages/PostForm'
 import { AssignmentList } from './pages/AssignmentList'
 import { AssignmentDetail } from './pages/AssignmentDetail'
 import { AssignmentForm } from './pages/AssignmentForm'
+import { SubmissionList } from './pages/SubmissionList'
+import { SubmissionDetail } from './pages/SubmissionDetail'
 
 function NotFound() {
   return (
@@ -54,6 +56,28 @@ function HomeRedirect() {
   return <Navigate to={`/class/${user?.class_id}`} replace />
 }
 
+// 역할 기반 레이아웃 래퍼 - 교사면 TeacherLayout, 학생이면 StudentLayout
+function RoleBasedLayout() {
+  const { user } = useAuthStore()
+
+  if (user?.role === 'teacher') {
+    return <TeacherLayout />
+  }
+
+  return <StudentLayout />
+}
+
+// 학생 상세 페이지 래퍼 (간단한 레이아웃)
+function StudentPageWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-w-[430px] mx-auto min-h-screen flex flex-col bg-[#F7F6F3]">
+      <main className="flex-1 p-4">
+        {children}
+      </main>
+    </div>
+  )
+}
+
 export default function App() {
   const { checkAuth, isLoading } = useAuthStore()
 
@@ -81,7 +105,7 @@ export default function App() {
         }
       />
 
-      {/* 교사 전용 라우트 */}
+      {/* 교사 전용 라우트 (대시보드, 관리) */}
       <Route
         element={
           <AuthGuard requireRole="teacher">
@@ -97,14 +121,15 @@ export default function App() {
         <Route path="/class/:classId/board" element={<Board />} />
         <Route path="/class/:classId/board/new" element={<PostForm />} />
         <Route path="/class/:classId/board/:postId/edit" element={<PostForm />} />
-        {/* 교사 과제 */}
-        <Route path="/class/:classId/assignments" element={<AssignmentList />} />
+        {/* 교사 과제 출제/수정 */}
         <Route path="/class/:classId/assignments/new" element={<AssignmentForm />} />
-        <Route path="/class/:classId/assignments/:assignmentId" element={<AssignmentDetail />} />
         <Route path="/class/:classId/assignments/:assignmentId/edit" element={<AssignmentForm />} />
+        {/* 교사 제출 현황 */}
+        <Route path="/class/:classId/assignments/:assignmentId/submissions" element={<SubmissionList />} />
+        <Route path="/class/:classId/assignments/:assignmentId/submissions/:submissionId" element={<SubmissionDetail />} />
       </Route>
 
-      {/* 학생 전용 라우트 */}
+      {/* 학생 전용 라우트 (홈, 게시판, 프로필) */}
       <Route
         path="/class/:classId"
         element={
@@ -115,26 +140,33 @@ export default function App() {
       >
         <Route index element={<ClassHome />} />
         <Route path="posts" element={<Board />} />
-        <Route path="assignments" element={<AssignmentList />} />
         <Route path="profile" element={<StudentProfile />} />
       </Route>
 
-      {/* 학생 과제 상세 (별도 페이지) */}
+      {/*
+        공통 과제 라우트 (교사/학생 모두 접근 가능)
+        - 역할에 따라 다른 레이아웃 적용
+      */}
       <Route
-        path="/class/:classId/assignments/:assignmentId"
+        path="/class/:classId/assignments"
         element={
-          <AuthGuard requireRole="student">
-            <AssignmentDetail />
+          <AuthGuard>
+            <RoleBasedLayout />
           </AuthGuard>
         }
-      />
+      >
+        <Route index element={<AssignmentList />} />
+        <Route path=":assignmentId" element={<AssignmentDetail />} />
+      </Route>
 
-      {/* 학생 게시물 상세 (별도 페이지) */}
+      {/* 학생 게시물 상세 (별도 페이지 - 하단 네비 없음) */}
       <Route
         path="/class/:classId/posts/:postId"
         element={
           <AuthGuard requireRole="student">
-            <PostDetail />
+            <StudentPageWrapper>
+              <PostDetail />
+            </StudentPageWrapper>
           </AuthGuard>
         }
       />
@@ -142,7 +174,9 @@ export default function App() {
         path="/class/:classId/posts/:postId/edit"
         element={
           <AuthGuard requireRole="student">
-            <PostForm />
+            <StudentPageWrapper>
+              <PostForm />
+            </StudentPageWrapper>
           </AuthGuard>
         }
       />

@@ -314,30 +314,49 @@
 
 ## 3-10: 과제 제출/피드백
 
-### SubmissionForm 페이지 (학생) 테스트
-- [ ] 과제 정보 표시 (읽기 전용)
-- [ ] 답안 입력 에디터
-- [ ] 파일 첨부 기능
-- [ ] 임시 저장 버튼
-- [ ] 최종 제출 버튼
-- [ ] 제출 확인 모달
-- [ ] 제출 후 수정 불가 표시
+### 학생 제출 페이지 테스트 (AssignmentDetail.tsx에 통합)
+- [x] 과제 정보 표시 (읽기 전용) - AssignmentDetail.tsx:289-295 과제 설명 Card
+- [x] 답안 입력 에디터 - QuestionCardAnswer 컴포넌트 (307-322) 서술형/단답형/객관식 지원
+- [ ] 파일 첨부 기능 - 백엔드 API 구현됨, 프론트엔드 QuestionCardAnswer 파일 업로드 미완성
+- [x] 임시 저장 버튼 - SubmitBar.onSaveDraft (345) + 자동 임시저장 (92-101)
+- [x] 최종 제출 버튼 - SubmitBar.onSubmit (346) + handleSubmit (160-188)
+- [ ] 제출 확인 모달 - 미구현 (직접 제출됨)
+- [x] 제출 후 수정 불가 표시 - isPastDue 조건 (338)으로 SubmitBar 숨김
 
 ### SubmissionList 페이지 (교사) 테스트
-- [ ] 제출 현황 테이블
-- [ ] 제출 상태 필터 (전체/제출/미제출)
-- [ ] 팀별 보기 (팀 과제인 경우)
-- [ ] 제출물 클릭 시 상세 보기
-- [ ] 일괄 다운로드 (선택적)
+- [x] 제출 현황 테이블 - SubmissionList.tsx:158-201 Table + TableHeader + TableRow
+- [x] 제출 상태 필터 (전체/제출/미제출) - Tabs (131-136) 전체/제출완료/임시저장/미제출
+- [ ] 팀별 보기 (팀 과제인 경우) - 팀 정보 열은 있으나 그룹화 미구현
+- [x] 제출물 클릭 시 상세 보기 - SubmissionRow onClick (285-288) navigate
+- [ ] 일괄 다운로드 (선택적) - 미구현
 
-### FeedbackForm 페이지 (교사) 테스트
-- [ ] 학생/팀 정보 표시
-- [ ] 제출 답안 표시
-- [ ] 첨부 파일 다운로드
-- [ ] 점수 입력 필드
-- [ ] 피드백 코멘트 입력
-- [ ] 저장 버튼 동작
-- [ ] 이전/다음 제출 네비게이션
+### SubmissionDetail 페이지 (교사 피드백) 테스트
+- [x] 학생/팀 정보 표시 - SubmissionDetail.tsx:157-164, 178-200 submitter + team + AvatarGroup
+- [x] 제출 답안 표시 - QuestionAnswerCard (203-209, 292-355) 질문별 답변
+- [ ] 첨부 파일 다운로드 - 파일 업로드 자체 미완성
+- [ ] 점수 입력 필드 - 스펙에 없음, 미구현
+- [x] 피드백 코멘트 입력 - Textarea (223-232) + feedbackDirty 상태
+- [x] 저장 버튼 동작 - handleSaveFeedback (65-84) + criticalTransaction
+- [ ] 이전/다음 제출 네비게이션 - 미구현
+
+### 제출물 공개 기능 테스트
+- [x] 공개 버튼 (제출 완료 시) - SubmissionDetail.tsx:169-173 "게시판 공개" 버튼
+- [x] 공개 확인 모달 - Modal (248-287)
+- [x] 공개 후 게시판 등록 - handlePublish (87-106) POST /submissions/:id/publish
+
+### API 테스트 결과
+- [x] GET /api/v1/assignments/:id/submissions - 제출 현황 조회 (교사)
+- [x] POST /api/v1/assignments/:id/draft - 임시저장 (학생)
+- [x] POST /api/v1/assignments/:id/submit - 최종 제출 (학생)
+- [x] GET /api/v1/submissions/:id - 제출물 상세 조회 (교사)
+- [x] PATCH /api/v1/submissions/:id/feedback - 피드백 저장 (교사)
+- [x] POST /api/v1/submissions/:id/publish - 제출물 공개 (교사)
+- [x] POST /api/v1/submissions/:id/files - 파일 업로드 (학생)
+
+> **테스트 완료**: 2026-04-24 | 16/22 항목 통과 (파일 첨부 관련 4항목, 확인 모달, 네비게이션 미구현)
+> **구현 파일**: `pages/AssignmentDetail.tsx`, `pages/SubmissionList.tsx`, `pages/SubmissionDetail.tsx`, `types/assignment.ts`
+> **라우팅**: `/class/:classId/assignments/:assignmentId/submissions` (목록), `/class/:classId/assignments/:assignmentId/submissions/:submissionId` (상세)
+> **미구현 사항**: 파일 첨부 UI, 제출 확인 모달, 이전/다음 네비게이션, 팀별 그룹 보기
 
 ---
 

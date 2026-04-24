@@ -19,7 +19,6 @@ import {
 import type {
   AssignmentDetailResponse,
   Answer,
-  Question,
   SubmitResponse,
 } from '../types/assignment'
 
@@ -41,7 +40,7 @@ export function AssignmentDetail() {
   const [answers, setAnswers] = useState<Record<number, string>>({})
   const [isDirty, setIsDirty] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [_saving, setSaving] = useState(false)
 
   // 팀원 정보 (팀 과제인 경우)
   const [teamMembers, setTeamMembers] = useState<string[]>([])

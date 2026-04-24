@@ -11,7 +11,6 @@ import {
   CardSkeleton,
   ErrorState,
   Button,
-  TopBar,
 } from '../components/ui'
 import type { Assignment, AssignmentListResponse } from '../types/assignment'
 

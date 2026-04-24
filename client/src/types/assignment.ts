@@ -141,3 +141,39 @@ export interface SubmissionsResponse {
     not_started: number
   }
 }
+
+// 제출물 상세 응답 (교사용)
+export interface SubmissionDetailResponse {
+  submission: {
+    id: number
+    status: 'draft' | 'submitted'
+    version: number
+    feedback: string | null
+    is_published: boolean
+    submitted_at: string | null
+    submitter: Author
+    team: {
+      id: number
+      name: string
+      members: Author[]
+    } | null
+  }
+  assignment: {
+    id: number
+    title: string
+    description: string
+    scope: AssignmentScope
+  }
+  questions: {
+    id: number
+    order_num: number
+    question_type: QuestionType
+    body: string
+    options: string[] | null
+    required: boolean
+    answer: {
+      text: string | null
+      updated_at: string | null
+    }
+  }[]
+}
