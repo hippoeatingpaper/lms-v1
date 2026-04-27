@@ -55,8 +55,8 @@ export function AssignmentDetail() {
 
   // 파일 업로드 상태 (questionId별)
   const [uploadedFiles, setUploadedFiles] = useState<Record<number, UploadedFileInfo>>({})
-  const [_uploadingQuestionId, setUploadingQuestionId] = useState<number | null>(null)
-  const { upload, progress: _uploadProgress } = useFileUpload()
+  const [uploadingQuestionId, setUploadingQuestionId] = useState<number | null>(null)
+  const { upload, progress: uploadProgress } = useFileUpload()
 
   // 데이터 로드
   useEffect(() => {
@@ -407,6 +407,8 @@ export function AssignmentDetail() {
             onOptionsChange={(v) => handleOptionsChange(question.id, v)}
             onFileSelect={(file) => handleFileSelect(question.id, file)}
             onFileReplace={() => handleFileReplace(question.id)}
+            uploading={uploadingQuestionId === question.id}
+            uploadProgress={uploadProgress}
           />
         ))}
 

@@ -533,11 +533,15 @@ export function FileUploadZone({
   allowCamera = true,
   selectedFile,
   onReplace,
+  uploading = false,
+  progress = 0,
 }: {
   onFileSelect: (file: File) => void
   allowCamera?: boolean
   selectedFile?: SelectedFile
   onReplace?: () => void
+  uploading?: boolean
+  progress?: number
 }) {
   // 허용 확장자: .bmp 제외, .mp4는 100MB 별도 제한 (일반 20MB)
   const ACCEPT =
@@ -545,6 +549,20 @@ export function FileUploadZone({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) onFileSelect(e.target.files[0])
+  }
+
+  // 업로드 중 상태
+  if (uploading) {
+    return (
+      <div className="border border-[#AFA9EC] bg-[#EEEDFE] rounded-xl p-4 text-center">
+        <div className="animate-pulse">
+          <Upload size={18} strokeWidth={1.5} className="mx-auto mb-2 text-[#534AB7]" />
+        </div>
+        <p className="text-xs font-medium text-[#3C3489] mb-2">업로드 중...</p>
+        <ProgressBar value={progress} />
+        <p className="text-[10px] text-[#534AB7] mt-1.5">{progress}%</p>
+      </div>
+    )
   }
 
   if (selectedFile) {
@@ -769,6 +787,8 @@ export function QuestionCardAnswer({
   onOptionsChange,
   onFileSelect,
   onFileReplace,
+  uploading = false,
+  uploadProgress = 0,
 }: {
   index: number
   type: QuestionType
@@ -785,6 +805,8 @@ export function QuestionCardAnswer({
   onOptionsChange?: (v: string[]) => void
   onFileSelect?: (f: File) => void
   onFileReplace?: () => void
+  uploading?: boolean
+  uploadProgress?: number
 }) {
   const isFilled =
     type === 'file'            ? !!selectedFile :
@@ -844,6 +866,8 @@ export function QuestionCardAnswer({
             allowCamera={allowCamera}
             selectedFile={selectedFile}
             onReplace={onFileReplace}
+            uploading={uploading}
+            progress={uploadProgress}
           />
         )}
       </div>
