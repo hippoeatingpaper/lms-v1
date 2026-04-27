@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronRight, Users, Share2, MessageSquare, Check } from 'lucide-react'
-import { api, apiPatch, apiPost } from '../lib/api'
+import { ChevronRight, Users, Share2, MessageSquare, Check, EyeOff } from 'lucide-react'
+import { api, apiPatch, apiPost, apiDelete } from '../lib/api'
 import {
   Badge,
   Button,
@@ -36,6 +36,7 @@ export function SubmissionDetail() {
   // 공개 모달
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [unpublishing, setUnpublishing] = useState(false)
 
   // 데이터 로드
   useEffect(() => {
@@ -105,6 +106,27 @@ export function SubmissionDetail() {
     }
   }
 
+  // 제출물 비공개
+  const handleUnpublish = async () => {
+    if (!submissionId) return
+
+    setUnpublishing(true)
+    try {
+      await apiDelete(`/submissions/${submissionId}/publish`)
+      toast.success('제출물이 비공개로 전환되었습니다.')
+
+      // 데이터 새로고침
+      const result = await api<SubmissionDetailResponse>(
+        `/submissions/${submissionId}`
+      )
+      setData(result)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '비공개 전환에 실패했습니다.')
+    } finally {
+      setUnpublishing(false)
+    }
+  }
+
   // 로딩 상태
   if (loading) {
     return (
@@ -170,6 +192,17 @@ export function SubmissionDetail() {
             <Button variant="secondary" onClick={() => setShowPublishModal(true)}>
               <Share2 size={14} strokeWidth={1.5} />
               게시판 공개
+            </Button>
+          )}
+          {submission.is_published && (
+            <Button
+              variant="secondary"
+              onClick={handleUnpublish}
+              loading={unpublishing}
+              disabled={unpublishing}
+            >
+              <EyeOff size={14} strokeWidth={1.5} />
+              비공개로 전환
             </Button>
           )}
         </div>

@@ -251,9 +251,9 @@ export function createAssignment(req, res) {
       const allowMultiple = q.allow_multiple ? 1 : 0
 
       db.run(
-        `INSERT INTO assignment_questions (assignment_id, order_num, question_type, body, options, required)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [assignmentId, orderNum, q.question_type, q.body.trim(), options, required]
+        `INSERT INTO assignment_questions (assignment_id, order_num, question_type, body, options, required, allow_multiple)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [assignmentId, orderNum, q.question_type, q.body.trim(), options, required, allowMultiple]
       )
     }
 
@@ -291,7 +291,8 @@ export function createAssignment(req, res) {
       question_type: q.question_type,
       body: q.body,
       options: q.options ? JSON.parse(q.options) : null,
-      required: !!q.required
+      required: !!q.required,
+      allow_multiple: !!q.allow_multiple
     }))
   })
 }
@@ -382,7 +383,8 @@ router.get('/:id', authenticate, (req, res) => {
       question_type: q.question_type,
       body: q.body,
       options: q.options ? JSON.parse(q.options) : null,
-      required: !!q.required
+      required: !!q.required,
+      allow_multiple: !!q.allow_multiple
     })),
     ...(user.role === 'student' && {
       submission: submission ? {
@@ -473,6 +475,10 @@ router.put('/:id', authenticate, requireTeacher, (req, res) => {
     params.push(class_id)
   }
 
+  // 기한 연장 여부 확인을 위한 변수
+  let isDeadlineExtended = false
+  let newDueAt = null
+
   if (due_at !== undefined) {
     if (due_at === null) {
       updates.push('due_at = ?')
@@ -484,8 +490,17 @@ router.put('/:id', authenticate, requireTeacher, (req, res) => {
           error: { code: 'VALIDATION_ERROR', message: '유효하지 않은 마감일 형식입니다.' }
         })
       }
+      newDueAt = dueDate.toISOString()
       updates.push('due_at = ?')
-      params.push(dueDate.toISOString())
+      params.push(newDueAt)
+
+      // 기한 연장 여부 확인 (기존 마감일보다 새 마감일이 늦은 경우)
+      if (assignment.due_at) {
+        const oldDueDate = new Date(assignment.due_at)
+        if (dueDate > oldDueDate) {
+          isDeadlineExtended = true
+        }
+      }
     }
   }
 
@@ -499,35 +514,101 @@ router.put('/:id', authenticate, requireTeacher, (req, res) => {
 
     // 질문 업데이트 (questions가 있는 경우)
     if (questions && Array.isArray(questions)) {
-      // 제출물이 있으면 질문 수정 불가
-      if (hasSubmissions) {
+      // 기존 질문 조회
+      const existingQuestions = db.all(
+        'SELECT * FROM assignment_questions WHERE assignment_id = ? ORDER BY order_num',
+        [id]
+      )
+
+      // 질문이 실제로 변경되었는지 확인
+      const questionsChanged = (() => {
+        if (existingQuestions.length !== questions.length) return true
+
+        for (let i = 0; i < questions.length; i++) {
+          const newQ = questions[i]
+          const oldQ = existingQuestions[i]
+
+          if (newQ.question_type !== oldQ.question_type) return true
+          if (newQ.body?.trim() !== oldQ.body) return true
+          if ((newQ.required !== false ? 1 : 0) !== oldQ.required) return true
+
+          const newOptions = newQ.options ? JSON.stringify(newQ.options) : null
+          if (newOptions !== oldQ.options) return true
+        }
+
+        return false
+      })()
+
+      // 제출물이 있고 질문이 변경되었으면 에러
+      if (hasSubmissions && questionsChanged) {
         throw new Error('제출물이 있는 과제의 질문은 수정할 수 없습니다.')
       }
 
-      // 각 질문 검증
-      const allErrors = []
-      for (let i = 0; i < questions.length; i++) {
-        const errors = validateQuestion(questions[i], i)
-        allErrors.push(...errors)
+      // 질문이 변경된 경우에만 업데이트
+      if (questionsChanged) {
+        // 각 질문 검증
+        const allErrors = []
+        for (let i = 0; i < questions.length; i++) {
+          const errors = validateQuestion(questions[i], i)
+          allErrors.push(...errors)
+        }
+
+        if (allErrors.length > 0) {
+          throw new Error(allErrors.join(' '))
+        }
+
+        // 기존 질문 삭제 후 새로 생성
+        db.run('DELETE FROM assignment_questions WHERE assignment_id = ?', [id])
+
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i]
+          const orderNum = q.order_num || (i + 1)
+          const options = q.options ? JSON.stringify(q.options) : null
+          const required = q.required !== false ? 1 : 0
+          const allowMultiple = q.allow_multiple ? 1 : 0
+
+          db.run(
+            `INSERT INTO assignment_questions (assignment_id, order_num, question_type, body, options, required, allow_multiple)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [id, orderNum, q.question_type, q.body.trim(), options, required, allowMultiple]
+          )
+        }
       }
+    }
 
-      if (allErrors.length > 0) {
-        throw new Error(allErrors.join(' '))
-      }
+    // 기한 연장 시 해당 반 학생들에게 알림 발송
+    if (isDeadlineExtended && newDueAt) {
+      const targetClassId = class_id !== undefined ? class_id : assignment.class_id
+      const assignmentTitle = title !== undefined ? title.trim() : assignment.title
 
-      // 기존 질문 삭제 후 새로 생성
-      db.run('DELETE FROM assignment_questions WHERE assignment_id = ?', [id])
+      // 새 마감일 포맷
+      const formattedDueAt = new Date(newDueAt).toLocaleString('ko-KR', {
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
 
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i]
-        const orderNum = q.order_num || (i + 1)
-        const options = q.options ? JSON.stringify(q.options) : null
-        const required = q.required !== false ? 1 : 0
+      const message = `"${assignmentTitle}" 과제의 제출기한이 ${formattedDueAt}까지로 연장되었습니다.`
 
+      // 해당 반 학생 목록 조회 (전체 반 과제인 경우 모든 학생)
+      const students = targetClassId
+        ? db.all("SELECT id FROM users WHERE role = 'student' AND class_id = ?", [targetClassId])
+        : db.all("SELECT id FROM users WHERE role = 'student'")
+
+      // 각 학생에게 알림 생성
+      for (const student of students) {
         db.run(
-          `INSERT INTO assignment_questions (assignment_id, order_num, question_type, body, options, required)
+          `INSERT INTO notifications (type, message, data, class_id, target_id, sender_id)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [id, orderNum, q.question_type, q.body.trim(), options, required]
+          [
+            'deadline_extended',
+            message,
+            JSON.stringify({ assignment_id: parseInt(id), new_due_at: newDueAt }),
+            targetClassId,
+            student.id,
+            user.id
+          ]
         )
       }
     }
@@ -564,7 +645,8 @@ router.put('/:id', authenticate, requireTeacher, (req, res) => {
       question_type: q.question_type,
       body: q.body,
       options: q.options ? JSON.parse(q.options) : null,
-      required: !!q.required
+      required: !!q.required,
+      allow_multiple: !!q.allow_multiple
     }))
   })
 })

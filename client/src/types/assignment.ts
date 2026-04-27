@@ -29,6 +29,7 @@ export interface Question {
   body: string
   options: string[] | null
   required: boolean
+  allow_multiple: boolean
 }
 
 // 제출물 정보
@@ -87,6 +88,7 @@ export interface AssignmentCreateRequest {
     body: string
     options?: string[]
     required: boolean
+    allow_multiple?: boolean
     order_num?: number
   }[]
 }
@@ -134,6 +136,11 @@ export interface SubmissionsResponse {
     is_published: boolean
     last_modified_by: Author | null
   }[]
+  not_started_list: {
+    id: number
+    name: string
+    type: 'student' | 'team'
+  }[]
   stats: {
     total: number
     submitted: number
@@ -171,6 +178,7 @@ export interface SubmissionDetailResponse {
     body: string
     options: string[] | null
     required: boolean
+    allow_multiple: boolean
     answer: {
       text: string | null
       updated_at: string | null

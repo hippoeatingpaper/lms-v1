@@ -127,33 +127,42 @@ export function getSubmissionsByAssignment(req, res) {
     ORDER BY s.submitted_at DESC
   `, [id])
 
-  // 통계 계산
+  // 통계 계산 및 미제출자 목록
   let totalExpected = 0
   let submitted = 0
   let draft = 0
+  let notStartedList = []
 
   if (assignment.scope === 'team') {
-    // 팀 과제: 해당 반의 팀 수
-    if (assignment.class_id) {
-      totalExpected = db.get(
-        'SELECT COUNT(*) as count FROM teams WHERE class_id = ?',
-        [assignment.class_id]
-      ).count
-    } else {
-      // 전체 반 과제: 모든 팀 수
-      totalExpected = db.get('SELECT COUNT(*) as count FROM teams').count
-    }
+    // 팀 과제: 해당 반의 팀 목록
+    const allTeams = assignment.class_id
+      ? db.all('SELECT id, name FROM teams WHERE class_id = ? ORDER BY name', [assignment.class_id])
+      : db.all('SELECT id, name FROM teams ORDER BY name')
+
+    totalExpected = allTeams.length
+
+    // 제출한 팀 ID 목록
+    const submittedTeamIds = new Set(submissions.map(s => s.team_id).filter(Boolean))
+
+    // 미제출 팀 목록
+    notStartedList = allTeams
+      .filter(team => !submittedTeamIds.has(team.id))
+      .map(team => ({ id: team.id, name: team.name, type: 'team' }))
   } else {
-    // 개인 과제: 해당 반의 학생 수
-    if (assignment.class_id) {
-      totalExpected = db.get(
-        "SELECT COUNT(*) as count FROM users WHERE role = 'student' AND class_id = ?",
-        [assignment.class_id]
-      ).count
-    } else {
-      // 전체 반 과제: 모든 학생 수
-      totalExpected = db.get("SELECT COUNT(*) as count FROM users WHERE role = 'student'").count
-    }
+    // 개인 과제: 해당 반의 학생 목록
+    const allStudents = assignment.class_id
+      ? db.all("SELECT id, name FROM users WHERE role = 'student' AND class_id = ? ORDER BY name", [assignment.class_id])
+      : db.all("SELECT id, name FROM users WHERE role = 'student' ORDER BY name")
+
+    totalExpected = allStudents.length
+
+    // 제출한 학생 ID 목록
+    const submittedStudentIds = new Set(submissions.map(s => s.submitter_id))
+
+    // 미제출 학생 목록
+    notStartedList = allStudents
+      .filter(student => !submittedStudentIds.has(student.id))
+      .map(student => ({ id: student.id, name: student.name, type: 'student' }))
   }
 
   for (const sub of submissions) {
@@ -161,7 +170,7 @@ export function getSubmissionsByAssignment(req, res) {
     else if (sub.status === 'draft') draft++
   }
 
-  const notStarted = Math.max(0, totalExpected - submitted - draft)
+  const notStarted = notStartedList.length
 
   res.json({
     submissions: submissions.map(s => ({
@@ -178,6 +187,7 @@ export function getSubmissionsByAssignment(req, res) {
         name: s.last_modified_by_name
       } : null
     })),
+    not_started_list: notStartedList,
     stats: {
       total: totalExpected,
       submitted,
@@ -603,6 +613,45 @@ router.post('/:id/publish', authenticate, requireTeacher, (req, res) => {
 })
 
 // ============================================================
+// 제출물 비공개 (교사)
+// DELETE /api/v1/submissions/:id/publish
+// ============================================================
+
+router.delete('/:id/publish', authenticate, requireTeacher, (req, res) => {
+  const { id } = req.params
+
+  // 제출물 조회
+  const submission = db.get('SELECT * FROM submissions WHERE id = ?', [id])
+  if (!submission) {
+    return res.status(404).json({
+      error: { code: 'NOT_FOUND', message: '제출물을 찾을 수 없습니다.' }
+    })
+  }
+
+  // 공개 상태 확인
+  if (!submission.is_published) {
+    return res.status(400).json({
+      error: { code: 'NOT_PUBLISHED', message: '공개되지 않은 제출물입니다.' }
+    })
+  }
+
+  // 트랜잭션으로 비공개 처리
+  criticalTransaction('submission_unpublish', () => {
+    // 연결된 게시글 삭제
+    if (submission.published_post_id) {
+      db.run('DELETE FROM posts WHERE id = ?', [submission.published_post_id])
+    }
+    // submissions 상태 초기화
+    db.run(
+      'UPDATE submissions SET is_published = 0, published_post_id = NULL WHERE id = ?',
+      [id]
+    )
+  })
+
+  res.json({ ok: true })
+})
+
+// ============================================================
 // 제출물 파일 업로드 (학생)
 // POST /api/v1/submissions/:id/files
 // ============================================================
@@ -797,6 +846,7 @@ router.get('/:id', authenticate, requireTeacher, (req, res) => {
       body: q.body,
       options: q.options ? JSON.parse(q.options) : null,
       required: !!q.required,
+      allow_multiple: !!q.allow_multiple,
       answer: {
         text: q.answer_text,
         updated_at: q.answer_updated_at

@@ -56,6 +56,7 @@ import postRouter, { getPostsByClass, createPost, deleteComment } from './routes
 import assignmentRouter, { getAssignmentsByClass, createAssignment } from './routes/assignments.js'
 import submissionRouter, { getSubmissionsByAssignment, saveDraft, submitAssignment } from './routes/submissions.js'
 import fileRouter, { getFilesByPost, getFilesBySubmission } from './routes/files.js'
+import notificationRouter from './routes/notifications.js'
 
 // 환경 변수 기본값
 const PORT = process.env.PORT || 3000
@@ -189,6 +190,10 @@ app.use('/api/v1/files', authenticate, fileRouter)
 app.get('/api/v1/posts/:postId/files', authenticate, getFilesByPost)
 // /api/v1/submissions/:submissionId/files - 제출물 첨부파일 목록 (GET)
 app.get('/api/v1/submissions/:submissionId/files', authenticate, getFilesBySubmission)
+
+// 알림 라우터
+// /api/v1/notifications - 알림 조회/읽음 처리
+app.use('/api/v1/notifications', notificationRouter)
 
 // ============================================================
 // 7. 기타 라우트

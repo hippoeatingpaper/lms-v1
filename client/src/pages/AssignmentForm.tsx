@@ -27,6 +27,7 @@ interface QuestionData {
   body: string
   options: string[]
   required: boolean
+  allow_multiple: boolean
 }
 
 export function AssignmentForm() {
@@ -91,6 +92,7 @@ export function AssignmentForm() {
             body: q.body,
             options: q.options || [],
             required: q.required,
+            allow_multiple: q.allow_multiple ?? false,
           }))
         )
       } catch (err) {
@@ -129,6 +131,7 @@ export function AssignmentForm() {
       body: '',
       options: type === 'multiple_choice' ? ['보기 1', '보기 2'] : [],
       required: true,
+      allow_multiple: false,
     }
     setQuestions([...questions, newQuestion])
     setFocusedQuestionId(tempId)
@@ -213,6 +216,7 @@ export function AssignmentForm() {
           body: q.body.trim(),
           options: q.question_type === 'multiple_choice' ? q.options : undefined,
           required: q.required,
+          allow_multiple: q.question_type === 'multiple_choice' ? q.allow_multiple : undefined,
           order_num: i + 1,
         })),
       }
@@ -386,6 +390,7 @@ export function AssignmentForm() {
               body={q.body}
               required={q.required}
               options={q.options}
+              multipleSelect={q.allow_multiple}
               focused={focusedQuestionId === q.tempId}
               onTypeChange={(type) => {
                 const updates: Partial<QuestionData> = { question_type: type }
@@ -400,6 +405,9 @@ export function AssignmentForm() {
               }
               onOptionsChange={(options) =>
                 updateQuestion(q.tempId, { options })
+              }
+              onMultipleSelectChange={(allow_multiple) =>
+                updateQuestion(q.tempId, { allow_multiple })
               }
               onMoveUp={() => moveQuestion(q.tempId, -1)}
               onMoveDown={() => moveQuestion(q.tempId, 1)}

@@ -4,9 +4,14 @@
 import { db, saveDatabase } from '../db.js'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
-const BACKUP_DIR = './data/migration-backups'
-const DB_PATH = process.env.DB_PATH || './data/database.db'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const PROJECT_ROOT = path.resolve(__dirname, '../..')
+
+const BACKUP_DIR = path.join(PROJECT_ROOT, 'data', 'migration-backups')
+const DB_PATH = process.env.DB_PATH || path.join(PROJECT_ROOT, 'data', 'database.db')
 
 /**
  * 마이그레이션 정의
@@ -25,6 +30,12 @@ const DB_PATH = process.env.DB_PATH || './data/database.db'
  */
 const migrations = [
   // 마이그레이션은 여기에 추가
+  {
+    version: 1,
+    description: 'Add allow_multiple column to assignment_questions',
+    up: `ALTER TABLE assignment_questions ADD COLUMN allow_multiple BOOLEAN DEFAULT 0`,
+    down: null, // SQLite doesn't support DROP COLUMN easily
+  },
 ]
 
 /**

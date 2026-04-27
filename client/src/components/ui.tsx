@@ -726,7 +726,7 @@ export function QuestionCardEdit({
               </div>
             ))}
             <button
-              onClick={() => onOptionsChange?.([...options, `① 보기${options.length + 1}`])}
+              onClick={() => onOptionsChange?.([...options, `보기 ${options.length + 1}`])}
               className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-[#534AB7] pl-5 pt-1"
             >
               + 선택지 추가

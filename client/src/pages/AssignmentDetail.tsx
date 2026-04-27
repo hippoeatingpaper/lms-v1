@@ -52,13 +52,11 @@ export function AssignmentDetail() {
   const [submitting, setSubmitting] = useState(false)
   const [_saving, setSaving] = useState(false)
 
-  // 팀원 정보 (팀 과제인 경우)
-  const [teamMembers, setTeamMembers] = useState<string[]>([])
 
   // 파일 업로드 상태 (questionId별)
   const [uploadedFiles, setUploadedFiles] = useState<Record<number, UploadedFileInfo>>({})
-  const [uploadingQuestionId, setUploadingQuestionId] = useState<number | null>(null)
-  const { upload, progress: uploadProgress } = useFileUpload()
+  const [_uploadingQuestionId, setUploadingQuestionId] = useState<number | null>(null)
+  const { upload, progress: _uploadProgress } = useFileUpload()
 
   // 데이터 로드
   useEffect(() => {
@@ -83,17 +81,6 @@ export function AssignmentDetail() {
           setAnswers(answerMap)
         }
 
-        // 팀원 정보 로드 (팀 과제인 경우)
-        if (result.assignment.scope === 'team' && user?.team_id) {
-          try {
-            const teamData = await api<{ team: { members: { name: string }[] } }>(
-              `/teams/${user.team_id}`
-            )
-            setTeamMembers(teamData.team.members.map((m) => m.name))
-          } catch {
-            // 팀 정보 로드 실패 시 무시
-          }
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : '과제를 불러올 수 없습니다.')
       } finally {
@@ -394,10 +381,10 @@ export function AssignmentDetail() {
         )}
 
         {/* 팀 배너 */}
-        {assignment.scope === 'team' && user?.team_id && (
+        {assignment.scope === 'team' && user?.team_id && user?.team_name && (
           <TeamBanner
-            teamName={`${user.team_id}모둠`}
-            members={teamMembers}
+            teamName={`${user.team_name}`}
+            members={[]}
             note="팀원 누구나 수정 가능"
           />
         )}
@@ -411,7 +398,7 @@ export function AssignmentDetail() {
             body={question.body}
             required={question.required}
             options={question.options || undefined}
-            multipleSelect={false}
+            multipleSelect={question.allow_multiple ?? false}
             allowCamera={true}
             answerText={answers[question.id] || ''}
             answerOptions={parseAnswerOptions(answers[question.id])}
@@ -522,14 +509,22 @@ function TeacherAssignmentView({
     <div className="space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-medium">{assignment.title}</h1>
-          <p className="text-xs text-gray-500 mt-1">
-            {assignment.scope === 'team' ? '팀 과제' : '개인 과제'} ·{' '}
-            {questions.length}문항
-            {assignment.due_at &&
-              ` · 마감: ${new Date(assignment.due_at).toLocaleDateString('ko-KR')}`}
-          </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/class/${classId}/assignments`)}
+            className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ChevronRight size={18} strokeWidth={1.5} className="rotate-180" />
+          </button>
+          <div>
+            <h1 className="text-lg font-medium">{assignment.title}</h1>
+            <p className="text-xs text-gray-500 mt-1">
+              {assignment.scope === 'team' ? '팀 과제' : '개인 과제'} ·{' '}
+              {questions.length}문항
+              {assignment.due_at &&
+                ` · 마감: ${new Date(assignment.due_at).toLocaleDateString('ko-KR')}`}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button

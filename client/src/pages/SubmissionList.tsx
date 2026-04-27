@@ -129,7 +129,7 @@ export function SubmissionList() {
 
       {/* 필터 탭 */}
       <Tabs value={filter} onChange={(v) => setFilter(v as FilterTab)}>
-        <Tab value="all" label={`전체 (${data.submissions.length})`} />
+        <Tab value="all" label={`전체 (${stats.total})`} />
         <Tab value="submitted" label={`제출완료 (${stats.submitted})`} />
         <Tab value="draft" label={`임시저장 (${stats.draft})`} />
         <Tab value="not_started" label={`미제출 (${stats.not_started})`} />
@@ -138,10 +138,8 @@ export function SubmissionList() {
       {/* 제출물 테이블 */}
       {filter === 'not_started' ? (
         <NotStartedList
-          assignmentId={Number(assignmentId)}
+          notStartedList={data.not_started_list}
           scope={assignment.scope}
-          classId={assignment.class_id}
-          submissions={data.submissions}
         />
       ) : filteredSubmissions.length === 0 ? (
         <EmptyState
@@ -194,6 +192,23 @@ export function SubmissionList() {
                       )
                     }
                   }}
+                  onUnpublish={async () => {
+                    try {
+                      await api(`/submissions/${submission.id}/publish`, {
+                        method: 'DELETE',
+                      })
+                      toast.success('제출물이 비공개로 전환되었습니다.')
+                      // 데이터 새로고침
+                      const newData = await api<SubmissionsResponse>(
+                        `/assignments/${assignmentId}/submissions`
+                      )
+                      setData(newData)
+                    } catch (err) {
+                      toast.error(
+                        err instanceof Error ? err.message : '비공개 전환에 실패했습니다.'
+                      )
+                    }
+                  }}
                 />
               ))}
             </tbody>
@@ -211,12 +226,14 @@ function SubmissionRow({
   classId,
   assignmentId,
   onPublish,
+  onUnpublish,
 }: {
   submission: SubmissionsResponse['submissions'][0]
   isTeamAssignment: boolean
   classId: string
   assignmentId: string
   onPublish: () => void
+  onUnpublish: () => void
 }) {
   const navigate = useNavigate()
 
@@ -259,12 +276,22 @@ function SubmissionRow({
     })
   }
 
+  // 공개된 경우 비공개 버튼 표시
+  if (submission.is_published) {
+    actions.push({
+      label: '비공개',
+      onClick: onUnpublish,
+    })
+  }
+
   const cells = isTeamAssignment
     ? [
         <span className="text-xs font-medium text-gray-900">
           {submission.team?.name || '-'}
         </span>,
-        <span className="text-xs text-gray-600">{submission.submitter.name}</span>,
+        <span className="text-xs text-gray-600">
+          {submission.last_modified_by?.name || submission.submitter.name}
+        </span>,
         statusBadge,
         <span className="text-xs text-gray-500">{submittedAt}</span>,
         feedbackBadge,
@@ -291,25 +318,44 @@ function SubmissionRow({
   )
 }
 
-// 미제출자 목록 (별도 API 호출 필요 없이 기존 데이터로 계산 어려움 - 간소화 버전)
+// 미제출자 목록
 function NotStartedList({
+  notStartedList,
   scope,
 }: {
-  assignmentId: number
+  notStartedList: SubmissionsResponse['not_started_list']
   scope: 'individual' | 'team'
-  classId: number | null
-  submissions: SubmissionsResponse['submissions']
 }) {
+  if (notStartedList.length === 0) {
+    return (
+      <EmptyState
+        icon={Users}
+        message={scope === 'team' ? '모든 팀이 제출했습니다.' : '모든 학생이 제출했습니다.'}
+      />
+    )
+  }
+
   return (
-    <div className="py-8 text-center">
-      <Users size={32} strokeWidth={1} className="mx-auto mb-3 text-gray-300" />
-      <p className="text-sm text-gray-500 mb-2">
-        {scope === 'team' ? '아직 제출하지 않은 팀이 있습니다.' : '아직 제출하지 않은 학생이 있습니다.'}
-      </p>
-      <p className="text-xs text-gray-400">
-        제출을 완료하면 이 목록에서 사라집니다.
-      </p>
-    </div>
+    <Card className="p-0 overflow-hidden">
+      <Table>
+        <TableHeader
+          columns={scope === 'team' ? ['팀 이름'] : ['학생 이름']}
+          widths={['100%']}
+        />
+        <tbody>
+          {notStartedList.map((item) => (
+            <TableRow
+              key={item.id}
+              cells={[
+                <span className="text-xs font-medium text-gray-900">
+                  {item.name}
+                </span>,
+              ]}
+            />
+          ))}
+        </tbody>
+      </Table>
+    </Card>
   )
 }
 
