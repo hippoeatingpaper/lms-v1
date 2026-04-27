@@ -194,7 +194,7 @@ function CommentInput({ onSubmit, loading }: CommentInputProps) {
 
 // 첨부파일 표시 컴포넌트
 interface FileAttachmentProps {
-  files: { id: number; filename: string; size: number }[]
+  files: { id: number; filename: string; original_name: string; size: number }[]
 }
 
 function FileAttachment({ files }: FileAttachmentProps) {
@@ -214,7 +214,7 @@ function FileAttachment({ files }: FileAttachmentProps) {
         >
           <div className="flex items-center gap-2">
             <FileText size={16} className="text-gray-400" />
-            <span className="text-sm">{file.filename}</span>
+            <span className="text-sm">{file.original_name}</span>
             <span className="text-xs text-gray-400">
               ({formatFileSize(file.size)})
             </span>

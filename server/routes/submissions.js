@@ -734,6 +734,8 @@ router.post('/:id/files',
 
     // 새 파일 저장
     const relativePath = path.relative(path.resolve(UPLOAD_DIR), file.path)
+    // 디코딩된 원본 파일명 사용 (한글 파일명 지원)
+    const originalName = file.decodedOriginalname || file.originalname
 
     const { lastInsertRowid } = db.run(
       `INSERT INTO files (
@@ -742,7 +744,7 @@ router.post('/:id/files',
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         file.filename,
-        file.originalname,
+        originalName,
         relativePath,
         file.detectedMime,
         file.size,
@@ -759,7 +761,7 @@ router.post('/:id/files',
       file: {
         id: lastInsertRowid,
         filename: file.filename,
-        original_name: file.originalname,
+        original_name: originalName,
         mimetype: file.detectedMime,
         size: file.size,
         url: `/api/v1/files/${lastInsertRowid}/download`,
@@ -810,6 +812,34 @@ router.get('/:id', authenticate, requireTeacher, (req, res) => {
     ORDER BY aq.order_num
   `, [id, submission.assignment_id])
 
+  // 제출물 첨부파일 조회
+  const files = db.all(`
+    SELECT f.*, u.name as uploader_name
+    FROM files f
+    JOIN users u ON f.uploader_id = u.id
+    WHERE f.submission_id = ?
+    ORDER BY f.question_id, f.created_at
+  `, [id])
+
+  // 질문별 파일 맵핑
+  const filesByQuestion = new Map()
+  for (const file of files) {
+    const questionId = file.question_id
+    if (!filesByQuestion.has(questionId)) {
+      filesByQuestion.set(questionId, [])
+    }
+    filesByQuestion.get(questionId).push({
+      id: file.id,
+      filename: file.filename,
+      original_name: file.original_name,
+      mimetype: file.mimetype,
+      size: file.size,
+      url: `/api/v1/files/${file.id}/download`,
+      uploader: { id: file.uploader_id, name: file.uploader_name },
+      created_at: file.created_at
+    })
+  }
+
   // 팀원 정보 (팀 과제인 경우)
   let teamMembers = []
   if (submission.team_id) {
@@ -850,7 +880,8 @@ router.get('/:id', authenticate, requireTeacher, (req, res) => {
       answer: {
         text: q.answer_text,
         updated_at: q.answer_updated_at
-      }
+      },
+      files: filesByQuestion.get(q.id) || []
     }))
   })
 })

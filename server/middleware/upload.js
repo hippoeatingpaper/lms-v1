@@ -7,13 +7,13 @@ import fs from 'fs'
 import fsPromises from 'fs/promises'
 import { fileTypeFromBuffer } from 'file-type'
 
-// 환경 변수
-const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads'
+// 환경 변수 (절대 경로로 변환)
+const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || './uploads')
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE) || 20 * 1024 * 1024  // 20MB
 const MAX_VIDEO_SIZE = parseInt(process.env.MAX_VIDEO_SIZE) || 100 * 1024 * 1024  // 100MB
 
 // 업로드 디렉터리 확인/생성
-fs.mkdirSync(path.resolve(UPLOAD_DIR), { recursive: true })
+fs.mkdirSync(UPLOAD_DIR, { recursive: true })
 
 // ============================================================
 // 허용 MIME 타입
@@ -54,15 +54,31 @@ function getMaxFileSize(mimeType) {
 // Multer 스토리지 설정
 // ============================================================
 
+/**
+ * 파일명 디코딩 (Latin-1 → UTF-8)
+ * multer는 파일명을 Latin-1로 디코딩하므로, UTF-8 한글이 깨짐
+ */
+function decodeFilename(filename) {
+  try {
+    return Buffer.from(filename, 'latin1').toString('utf8')
+  } catch {
+    return filename
+  }
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.resolve(UPLOAD_DIR))
+    cb(null, UPLOAD_DIR)
   },
   filename: (req, file, cb) => {
+    // Latin-1 → UTF-8 디코딩
+    const decodedName = decodeFilename(file.originalname)
     // 원본 파일명에서 경로 구성 요소 완전 제거 + 안전한 문자만 허용
-    const safeName = path.basename(file.originalname)
+    const safeName = path.basename(decodedName)
       .replace(/[^a-zA-Z0-9가-힣._-]/g, '_')
     const timestamp = Date.now()
+    // 디코딩된 원본 파일명을 file 객체에 저장 (DB 저장용)
+    file.decodedOriginalname = decodedName
     cb(null, `${timestamp}_${safeName}`)
   },
 })

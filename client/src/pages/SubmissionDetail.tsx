@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronRight, Users, Share2, MessageSquare, Check, EyeOff } from 'lucide-react'
+import { ChevronRight, Users, Share2, MessageSquare, Check, EyeOff, Download, FileText, Image, Film, File } from 'lucide-react'
 import { api, apiPatch, apiPost, apiDelete } from '../lib/api'
 import {
   Badge,
@@ -13,7 +13,7 @@ import {
   Modal,
   useToast,
 } from '../components/ui'
-import type { SubmissionDetailResponse, QuestionType } from '../types/assignment'
+import type { SubmissionDetailResponse, QuestionType, AttachedFile } from '../types/assignment'
 
 export function SubmissionDetail() {
   const { classId, assignmentId, submissionId } = useParams<{
@@ -359,7 +359,10 @@ function QuestionAnswerCard({
 
       {/* 답변 내용 */}
       <div className="ml-7">
-        {answerText ? (
+        {question.question_type === 'file' ? (
+          // 파일 첨부 타입
+          <FileAnswerDisplay files={question.files} />
+        ) : answerText ? (
           <div className="bg-[#F7F6F3] rounded-lg p-3">
             {question.question_type === 'multiple_choice' ? (
               <MultipleChoiceAnswer
@@ -384,6 +387,58 @@ function QuestionAnswerCard({
         )}
       </div>
     </Card>
+  )
+}
+
+// 파일 첨부 답변 표시
+function FileAnswerDisplay({ files }: { files: AttachedFile[] }) {
+  if (!files || files.length === 0) {
+    return <p className="text-xs text-gray-400 italic">(첨부파일 없음)</p>
+  }
+
+  const getFileIcon = (mimetype: string) => {
+    if (mimetype.startsWith('image/')) return Image
+    if (mimetype.startsWith('video/')) return Film
+    if (mimetype === 'application/pdf') return FileText
+    return File
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  return (
+    <div className="space-y-2">
+      {files.map((file) => {
+        const FileIcon = getFileIcon(file.mimetype)
+        return (
+          <a
+            key={file.id}
+            href={file.url}
+            download={file.original_name}
+            className="flex items-center gap-3 bg-[#F7F6F3] hover:bg-[#EEEDFE] rounded-lg p-3 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white border border-black/10 flex items-center justify-center flex-shrink-0">
+              <FileIcon size={16} className="text-gray-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-900 truncate">
+                {file.original_name}
+              </p>
+              <p className="text-[10px] text-gray-500">
+                {formatFileSize(file.size)}
+              </p>
+            </div>
+            <Download
+              size={16}
+              className="text-gray-400 group-hover:text-[#534AB7] flex-shrink-0 transition-colors"
+            />
+          </a>
+        )
+      })}
+    </div>
   )
 }
 

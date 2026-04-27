@@ -23,6 +23,7 @@ function formatFileSize(bytes: number): string {
 interface UploadedFile {
   id: number
   filename: string
+  original_name: string
   size: number
 }
 
@@ -338,7 +339,7 @@ export function PostForm() {
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <FileText size={16} className="text-gray-400 flex-shrink-0" />
-                  <span className="text-sm truncate">{file.filename}</span>
+                  <span className="text-sm truncate">{file.original_name}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">
                     ({formatFileSize(file.size)})
                   </span>

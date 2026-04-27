@@ -107,6 +107,9 @@ router.post('/',
       classId = submission?.class_id
     }
 
+    // 디코딩된 원본 파일명 사용 (한글 파일명 지원)
+    const originalName = file.decodedOriginalname || file.originalname
+
     // DB에 파일 정보 저장
     const { lastInsertRowid } = db.run(
       `INSERT INTO files (
@@ -115,7 +118,7 @@ router.post('/',
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         file.filename,
-        file.originalname,
+        originalName,
         relativePath,
         file.detectedMime,
         file.size,
@@ -134,7 +137,7 @@ router.post('/',
       file: {
         id: lastInsertRowid,
         filename: file.filename,
-        original_name: file.originalname,
+        original_name: originalName,
         mimetype: file.detectedMime,
         size: file.size,
         url: `/api/v1/files/${lastInsertRowid}/download`,
@@ -184,8 +187,18 @@ router.get('/:fileId/download', (req, res) => {
     })
   }
 
-  // 파일 다운로드
-  res.download(absolutePath, file.original_name)
+  // 파일 다운로드 (한글 파일명 인코딩 처리)
+  const encodedFilename = encodeURIComponent(file.original_name).replace(/'/g, "%27")
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`)
+  res.setHeader('Content-Type', file.mimetype || 'application/octet-stream')
+  res.sendFile(absolutePath, (err) => {
+    if (err && !res.headersSent) {
+      console.error('[FILE_DOWNLOAD] Error sending file:', err.message, { absolutePath, fileId })
+      res.status(500).json({
+        error: { code: 'DOWNLOAD_ERROR', message: '파일 다운로드 중 오류가 발생했습니다.' }
+      })
+    }
+  })
 })
 
 // ============================================================

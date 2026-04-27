@@ -196,7 +196,7 @@ export function createPost(req, res) {
 
   // 첨부 파일 조회
   const files = db.all(
-    'SELECT id, filename, size FROM files WHERE post_id = ?',
+    'SELECT id, filename, original_name, size FROM files WHERE post_id = ?',
     [lastInsertRowid]
   )
 
@@ -256,7 +256,7 @@ router.get('/:postId', authenticate, (req, res) => {
 
   // 첨부 파일
   const files = db.all(
-    'SELECT id, filename, size FROM files WHERE post_id = ?',
+    'SELECT id, filename, original_name, size FROM files WHERE post_id = ?',
     [postId]
   )
 
@@ -346,7 +346,7 @@ router.patch('/:postId', authenticate, (req, res) => {
   `, [postId])
 
   const files = db.all(
-    'SELECT id, filename, size FROM files WHERE post_id = ?',
+    'SELECT id, filename, original_name, size FROM files WHERE post_id = ?',
     [postId]
   )
 

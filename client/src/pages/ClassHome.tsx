@@ -16,8 +16,8 @@ interface Post {
 interface Assignment {
   id: number
   title: string
-  due_date: string
-  status?: 'pending' | 'submitted' | 'graded'
+  due_at: string
+  submission_status?: 'draft' | 'submitted' | 'graded' | null
 }
 
 interface ClassInfo {
@@ -177,8 +177,8 @@ function AssignmentCard({
   assignment: Assignment
   classId: string
 }) {
-  const dueInfo = getDueInfo(assignment.due_date)
-  const statusBadge = getStatusBadge(assignment.status, dueInfo.isOverdue)
+  const dueInfo = getDueInfo(assignment.due_at)
+  const statusBadge = getStatusBadge(assignment.submission_status, dueInfo.isOverdue)
 
   return (
     <Link to={`/class/${classId}/assignments/${assignment.id}`}>
@@ -240,17 +240,20 @@ function getDueInfo(dueDate: string): { text: string; isOverdue: boolean } {
 }
 
 function getStatusBadge(
-  status?: string,
+  status?: string | null,
   isOverdue?: boolean
 ): React.ReactNode {
-  if (status === 'submitted') {
-    return <Badge variant="teal">제출완료</Badge>
-  }
   if (status === 'graded') {
     return <Badge variant="purple">평가완료</Badge>
   }
+  if (status === 'submitted') {
+    return <Badge variant="teal">제출완료</Badge>
+  }
+  if (status === 'draft') {
+    return <Badge variant="gray">임시저장</Badge>
+  }
   if (isOverdue) {
-    return <Badge variant="gray">마감됨</Badge>
+    return <Badge variant="coral">마감됨</Badge>
   }
   return <Badge variant="amber">미제출</Badge>
 }

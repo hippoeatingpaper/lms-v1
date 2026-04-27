@@ -149,6 +149,18 @@ export interface SubmissionsResponse {
   }
 }
 
+// 첨부파일 정보
+export interface AttachedFile {
+  id: number
+  filename: string
+  original_name: string
+  mimetype: string
+  size: number
+  url: string
+  uploader: Author
+  created_at: string
+}
+
 // 제출물 상세 응답 (교사용)
 export interface SubmissionDetailResponse {
   submission: {
@@ -183,5 +195,6 @@ export interface SubmissionDetailResponse {
       text: string | null
       updated_at: string | null
     }
+    files: AttachedFile[]
   }[]
 }
